@@ -11,7 +11,7 @@
         <h1 class="title">Split Bill Calculator</h1>
         
         <div class="form-group">
-            <label class="form-label">Total Bill Amount ($)</label>
+            <label class="form-label">Total Bill Amount (Rs)</label>
             <input type="number" id="billAmount" class="form-input" placeholder="120" step="0.01" min="0">
         </div>
 
@@ -34,7 +34,7 @@
         </div>
 
         <div id="customTipGroup" class="form-group" style="display: none;">
-            <label class="form-label">Custom Tip Amount ($)</label>
+            <label class="form-label">Custom Tip Amount (Rs)</label>
             <input type="number" id="customTip" class="form-input" placeholder="0.00" step="0.01" min="0">
         </div>
 
@@ -57,15 +57,15 @@
             <h2 class="results-title">Results</h2>
             <div class="result-item">
                 <span class="result-label">Each person pays:</span>
-                <span class="result-value result-highlight" id="perPersonAmount">$0.00</span>
+                <span class="result-value result-highlight" id="perPersonAmount">Rs0.00</span>
             </div>
             <div class="result-item">
                 <span class="result-label">Total with Tip:</span>
-                <span class="result-value" id="totalWithTip">$0.00</span>
+                <span class="result-value" id="totalWithTip">Rs0.00</span>
             </div>
             <div class="result-item">
                 <span class="result-label">Tip Amount:</span>
-                <span class="result-value" id="tipAmount">$0.00</span>
+                <span class="result-value" id="tipAmount">Rs0.00</span>
             </div>
         </div>
 
@@ -206,9 +206,9 @@
                 }
 
                 // Update results
-                this.perPersonAmount.textContent = `$${perPerson.toFixed(2)}`;
-                this.totalWithTip.textContent = `$${total.toFixed(2)}`;
-                this.tipAmount.textContent = `$${tip.toFixed(2)}`;
+                this.perPersonAmount.textContent = `Rs${perPerson.toFixed(2)}`;
+                this.totalWithTip.textContent = `Rs${total.toFixed(2)}`;
+                this.tipAmount.textContent = `Rs${tip.toFixed(2)}`;
 
                 this.results.style.display = 'block';
             }

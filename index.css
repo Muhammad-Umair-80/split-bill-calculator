@@ -6,7 +6,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            background: linear-gradient(135deg, #2c3e50, #34495e, #3498db);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -15,23 +15,24 @@
         }
 
         .calculator {
-            background: rgba(45, 55, 72, 0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 32px;
             width: 100%;
             max-width: 400px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .title {
             text-align: center;
-            color: #4fd1c7;
+            color: #2c3e50;
             font-size: 28px;
             font-weight: 600;
             margin-bottom: 32px;
-            text-shadow: 0 2px 4px rgba(79, 209, 199, 0.3);
+            text-shadow: 0 2px 4px rgba(44, 62, 80, 0.2);
         }
 
         .form-group {
@@ -40,7 +41,7 @@
 
         .form-label {
             display: block;
-            color: #a0aec0;
+            color: #34495e;
             font-size: 14px;
             font-weight: 500;
             margin-bottom: 8px;
@@ -49,32 +50,32 @@
         .form-input {
             width: 100%;
             padding: 16px;
-            background: rgba(26, 32, 44, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(52, 73, 94, 0.2);
             border-radius: 12px;
-            color: #e2e8f0;
+            color: #2c3e50;
             font-size: 16px;
             transition: all 0.3s ease;
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #4fd1c7;
-            box-shadow: 0 0 0 3px rgba(79, 209, 199, 0.1);
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .form-select {
             width: 100%;
             padding: 16px;
-            background: rgba(26, 32, 44, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(52, 73, 94, 0.2);
             border-radius: 12px;
-            color: #e2e8f0;
+            color: #2c3e50;
             font-size: 16px;
             cursor: pointer;
             transition: all 0.3s ease;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334495e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 12px center;
             background-repeat: no-repeat;
             background-size: 16px;
@@ -83,8 +84,8 @@
 
         .form-select:focus {
             outline: none;
-            border-color: #4fd1c7;
-            box-shadow: 0 0 0 3px rgba(79, 209, 199, 0.1);
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .toggle-group {
@@ -95,7 +96,7 @@
         }
 
         .toggle-label {
-            color: #a0aec0;
+            color: #34495e;
             font-size: 14px;
             font-weight: 500;
         }
@@ -104,16 +105,16 @@
             position: relative;
             width: 48px;
             height: 24px;
-            background: rgba(26, 32, 44, 0.8);
+            background: rgba(52, 73, 94, 0.3);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(52, 73, 94, 0.2);
         }
 
         .toggle-switch.active {
-            background: #4fd1c7;
-            border-color: #4fd1c7;
+            background: #3498db;
+            border-color: #3498db;
         }
 
         .toggle-knob {
@@ -122,7 +123,7 @@
             left: 2px;
             width: 16px;
             height: 16px;
-            background: #e2e8f0;
+            background: #ffffff;
             border-radius: 50%;
             transition: all 0.3s ease;
         }
@@ -144,37 +145,37 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #4fd1c7, #38b2ac);
+            background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
-            box-shadow: 0 4px 15px rgba(79, 209, 199, 0.3);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 209, 199, 0.4);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
         }
 
         .btn-secondary {
             background: transparent;
-            color: #4fd1c7;
-            border: 2px solid #4fd1c7;
+            color: #3498db;
+            border: 2px solid #3498db;
         }
 
         .btn-secondary:hover {
-            background: rgba(79, 209, 199, 0.1);
+            background: rgba(52, 152, 219, 0.1);
             transform: translateY(-1px);
         }
 
         .results {
             margin-top: 32px;
             padding: 24px;
-            background: rgba(26, 32, 44, 0.6);
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(52, 73, 94, 0.1);
         }
 
         .results-title {
-            color: #4fd1c7;
+            color: #2c3e50;
             font-size: 20px;
             font-weight: 600;
             text-align: center;
@@ -196,32 +197,32 @@
         }
 
         .result-label {
-            color: #a0aec0;
+            color: #34495e;
             font-size: 16px;
         }
 
         .result-value {
-            color: #e2e8f0;
+            color: #2c3e50;
             font-size: 18px;
             font-weight: 600;
         }
 
         .result-highlight {
-            color: #4fd1c7;
+            color: #3498db;
             font-size: 20px;
         }
 
         .payer-result {
             text-align: center;
             padding: 16px;
-            background: rgba(79, 209, 199, 0.1);
+            background: rgba(52, 152, 219, 0.1);
             border-radius: 12px;
             margin-top: 16px;
-            border: 1px solid rgba(79, 209, 199, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.2);
         }
 
         .payer-name {
-            color: #4fd1c7;
+            color: #3498db;
             font-size: 18px;
             font-weight: 600;
         }
@@ -245,10 +246,10 @@
         .expense-input {
             flex: 1;
             padding: 12px;
-            background: rgba(26, 32, 44, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(52, 73, 94, 0.2);
             border-radius: 8px;
-            color: #e2e8f0;
+            color: #2c3e50;
             font-size: 14px;
         }
 
@@ -264,8 +265,8 @@
 
         .add-expense-btn {
             background: transparent;
-            color: #4fd1c7;
-            border: 1px dashed #4fd1c7;
+            color: #3498db;
+            border: 1px dashed #3498db;
             border-radius: 8px;
             padding: 12px;
             cursor: pointer;
