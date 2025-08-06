@@ -64,6 +64,18 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
+        /* Remove increment/decrement buttons from number inputs */
+        .form-input::-webkit-outer-spin-button,
+        .form-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .form-input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
         .form-select {
             width: 100%;
             padding: 16px;
@@ -88,49 +100,7 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
-        .toggle-group {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 24px;
-        }
 
-        .toggle-label {
-            color: #34495e;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 24px;
-            background: rgba(52, 73, 94, 0.3);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(52, 73, 94, 0.2);
-        }
-
-        .toggle-switch.active {
-            background: #3498db;
-            border-color: #3498db;
-        }
-
-        .toggle-knob {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background: #ffffff;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-switch.active .toggle-knob {
-            transform: translateX(24px);
-        }
 
         .btn {
             width: 100%;
@@ -227,52 +197,7 @@
             font-weight: 600;
         }
 
-        .itemized-section {
-            margin-top: 20px;
-            display: none;
-        }
 
-        .itemized-section.active {
-            display: block;
-        }
-
-        .expense-item {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-            align-items: center;
-        }
-
-        .expense-input {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(52, 73, 94, 0.2);
-            border-radius: 8px;
-            color: #2c3e50;
-            font-size: 14px;
-        }
-
-        .remove-btn {
-            background: #e53e3e;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .add-expense-btn {
-            background: transparent;
-            color: #3498db;
-            border: 1px dashed #3498db;
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 16px;
-        }
 
         @media (max-width: 480px) {
             .calculator {
