@@ -3,69 +3,758 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Split Bill Calculator</title>
-    <link rel="stylesheet" href="index.css">
+    <title>Modern Split Bill Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .navbar {
+            background: rgba(45, 55, 72, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(26, 32, 44, 0.8);
+            border-radius: 12px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: #a0aec0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tab.active {
+            background: #4fd1c7;
+            color: #1a202c;
+            box-shadow: 0 2px 8px rgba(79, 209, 199, 0.3);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(79, 209, 199, 0.1);
+            color: #4fd1c7;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 20px;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .calculator {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .title {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 32px;
+            text-shadow: 0 2px 4px rgba(44, 62, 80, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            color: #34495e;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(52, 73, 94, 0.2);
+            border-radius: 12px;
+            color: #2c3e50;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4fd1c7;
+            box-shadow: 0 0 0 3px rgba(79, 209, 199, 0.1);
+        }
+
+        .form-input::-webkit-outer-spin-button,
+        .form-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .form-input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(52, 73, 94, 0.2);
+            border-radius: 12px;
+            color: #2c3e50;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2334495e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: #4fd1c7;
+            box-shadow: 0 0 0 3px rgba(79, 209, 199, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4fd1c7, #38b2ac);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 209, 199, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 209, 199, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #4fd1c7;
+            border: 2px solid #4fd1c7;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(79, 209, 199, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+            border: none;
+        }
+
+        .btn-success {
+            background: #38a169;
+            color: white;
+            border: none;
+        }
+
+        .results {
+            margin-top: 32px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            border: 1px solid rgba(52, 73, 94, 0.1);
+        }
+
+        .results-title {
+            color: #2c3e50;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(52, 73, 94, 0.1);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            color: #34495e;
+            font-size: 16px;
+        }
+
+        .result-value {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .result-highlight {
+            color: #4fd1c7;
+            font-size: 20px;
+        }
+
+        .payer-result {
+            text-align: center;
+            padding: 16px;
+            background: rgba(79, 209, 199, 0.1);
+            border-radius: 12px;
+            margin-top: 16px;
+            border: 1px solid rgba(79, 209, 199, 0.2);
+        }
+
+        .payer-name {
+            color: #4fd1c7;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Split Share Styles */
+        .split-share {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .person-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(52, 73, 94, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .person-card:hover {
+            border-color: #4fd1c7;
+            transform: translateY(-2px);
+        }
+
+        .person-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .person-name {
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .person-balance {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .balance-positive {
+            color: #38a169;
+        }
+
+        .balance-negative {
+            color: #e53e3e;
+        }
+
+        .balance-zero {
+            color: #718096;
+        }
+
+        .expenses-list {
+            margin-top: 20px;
+        }
+
+        .expense-item {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(52, 73, 94, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .expense-item:hover {
+            border-color: #4fd1c7;
+            transform: translateY(-1px);
+        }
+
+        .expense-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .expense-description {
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .expense-amount {
+            color: #4fd1c7;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .expense-details {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .expense-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .settlements-list {
+            margin-top: 20px;
+        }
+
+        .settlement-item {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(52, 73, 94, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settlement-info {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .settlement-amount {
+            color: #4fd1c7;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #718096;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(113, 128, 150, 0.1);
+            color: #2c3e50;
+        }
+
+        .checkbox-group {
+            margin: 16px 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .checkbox-item label {
+            color: #2c3e50;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 16px;
+            }
+
+            .nav-tab {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            .container {
+                padding: 20px 16px;
+            }
+
+            .calculator {
+                padding: 24px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .people-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 24px;
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 24px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .nav-tab {
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="calculator">
-        <h1 class="title">Split Bill Calculator</h1>
-        
-        <div class="form-group">
-            <label class="form-label">Total Bill Amount (Rs)</label>
-            <input type="number" id="billAmount" class="form-input" placeholder="Enter amount" step="0.01" min="0">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Number of People</label>
-            <input type="number" id="numPeople" class="form-input" placeholder="Enter number" min="1">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Tip Percentage (%)</label>
-            <select id="tipPercentage" class="form-select">
-                <option value="0" selected>No Tip (0%)</option>
-                <option value="10">Good (10%)</option>
-                <option value="15">Great (15%)</option>
-                <option value="18">Amazing (18%)</option>
-                <option value="20">Excellent (20%)</option>
-                <option value="25">Outstanding (25%)</option>
-                <option value="custom">Custom Amount</option>
-            </select>
-        </div>
-
-        <div id="customTipGroup" class="form-group" style="display: none;">
-            <label class="form-label">Custom Tip Amount (Rs)</label>
-            <input type="number" id="customTip" class="form-input" placeholder="Enter tip amount" step="0.01" min="0">
-        </div>
-
-
-
-        <button class="btn btn-primary" id="calculateBtn">Calculate Share</button>
-        <button class="btn btn-secondary" id="randomPayerBtn">Randomly Assign Payer</button>
-
-        <div class="results" id="results" style="display: none;">
-            <h2 class="results-title">Results</h2>
-            <div class="result-item">
-                <span class="result-label">Each person pays:</span>
-                <span class="result-value result-highlight" id="perPersonAmount">Rs0.00</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Total with Tip:</span>
-                <span class="result-value" id="totalWithTip">Rs0.00</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Tip Amount:</span>
-                <span class="result-value" id="tipAmount">Rs0.00</span>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="simple">Simple Calculator</button>
+                <button class="nav-tab" data-tab="split">Split Share</button>
             </div>
         </div>
+    </nav>
 
-        <div id="payerResult" class="payer-result" style="display: none;">
-            <div class="payer-name" id="selectedPayer">Person 1 pays the bill!</div>
+    <!-- Simple Calculator Page -->
+    <div class="page active" id="simple-page">
+        <div class="container">
+            <div class="calculator">
+                <h1 class="title">Simple Bill Splitter</h1>
+                
+                <div class="form-group">
+                    <label class="form-label">Total Bill Amount (Rs)</label>
+                    <input type="number" id="billAmount" class="form-input" placeholder="Enter amount" step="0.01" min="0">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Number of People</label>
+                    <input type="number" id="numPeople" class="form-input" placeholder="Enter number" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tip Percentage (%)</label>
+                    <select id="tipPercentage" class="form-select">
+                        <option value="0" selected>No Tip (0%)</option>
+                        <option value="10">Good (10%)</option>
+                        <option value="15">Great (15%)</option>
+                        <option value="18">Amazing (18%)</option>
+                        <option value="20">Excellent (20%)</option>
+                        <option value="25">Outstanding (25%)</option>
+                        <option value="custom">Custom Amount</option>
+                    </select>
+                </div>
+
+                <div id="customTipGroup" class="form-group" style="display: none;">
+                    <label class="form-label">Custom Tip Amount (Rs)</label>
+                    <input type="number" id="customTip" class="form-input" placeholder="Enter tip amount" step="0.01" min="0">
+                </div>
+
+                <button class="btn btn-primary" id="calculateBtn">Calculate Share</button>
+                <button class="btn btn-secondary" id="randomPayerBtn">Randomly Assign Payer</button>
+
+                <div class="results" id="results" style="display: none;">
+                    <h2 class="results-title">Results</h2>
+                    <div class="result-item">
+                        <span class="result-label">Each person pays:</span>
+                        <span class="result-value result-highlight" id="perPersonAmount">Rs0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total with Tip:</span>
+                        <span class="result-value" id="totalWithTip">Rs0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Tip Amount:</span>
+                        <span class="result-value" id="tipAmount">Rs0.00</span>
+                    </div>
+                </div>
+
+                <div id="payerResult" class="payer-result" style="display: none;">
+                    <div class="payer-name" id="selectedPayer">Person 1 pays the bill!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Split Share Page -->
+    <div class="page" id="split-page">
+        <div class="container">
+            <div class="split-share">
+                <!-- People Section -->
+                <div class="section">
+                    <h2 class="section-title">
+                        👥 People
+                        <button class="btn btn-primary btn-small" id="addPersonBtn">+ Add Person</button>
+                    </h2>
+                    <div id="peopleGrid" class="people-grid">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <p>No people added yet. Click "Add Person" to get started!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Expense Section -->
+                <div class="section" id="expenseSection" style="display: none;">
+                    <h2 class="section-title">
+                        💰 Add Expense
+                        <button class="btn btn-primary btn-small" id="addExpenseBtn">+ Add Expense</button>
+                    </h2>
+                </div>
+
+                <!-- Expenses List -->
+                <div class="section" id="expensesSection" style="display: none;">
+                    <h2 class="section-title">📋 Expenses</h2>
+                    <div id="expensesList" class="expenses-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <p>No expenses added yet. Add some people and expenses to get started!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settlements Section -->
+                <div class="section" id="settlementsSection" style="display: none;">
+                    <h2 class="section-title">💸 Settle Debts</h2>
+                    <div id="settlementsList" class="settlements-list">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💸</div>
+                            <p>All debts are settled! Everyone's balance is zero.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Person Modal -->
+    <div class="modal" id="addPersonModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Person</h3>
+                <button class="close-btn" onclick="closeModal('addPersonModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" id="personName" class="form-input" placeholder="Enter person's name">
+            </div>
+            <button class="btn btn-primary" onclick="addPerson()">Add Person</button>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div class="modal" id="addExpenseModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Expense</h3>
+                <button class="close-btn" onclick="closeModal('addExpenseModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <input type="text" id="expenseDescription" class="form-input" placeholder="e.g., Dinner at Pizza Place">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Amount (Rs)</label>
+                <input type="number" id="expenseAmount" class="form-input" placeholder="Enter amount" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Paid By</label>
+                <select id="expensePaidBy" class="form-select">
+                    <option value="">Select who paid</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Split Between</label>
+                <div id="splitBetweenCheckboxes" class="checkbox-group">
+                    <!-- Checkboxes will be populated dynamically -->
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="addExpense()">Add Expense</button>
         </div>
     </div>
 
     <script>
-        class SplitBillCalculator {
+        // Simple Calculator Class
+        class SimpleCalculator {
             constructor() {
                 this.initializeElements();
                 this.attachEventListeners();
@@ -82,7 +771,6 @@
                 this.results = document.getElementById('results');
                 this.payerResult = document.getElementById('payerResult');
                 
-                // Result elements
                 this.perPersonAmount = document.getElementById('perPersonAmount');
                 this.totalWithTip = document.getElementById('totalWithTip');
                 this.tipAmount = document.getElementById('tipAmount');
@@ -101,8 +789,6 @@
                     }
                 });
             }
-
-
 
             isValidInput() {
                 const bill = parseFloat(this.billAmount.value);
@@ -133,7 +819,6 @@
                 const total = bill + tip;
                 const perPerson = total / people;
 
-                // Update results
                 this.perPersonAmount.textContent = `Rs${perPerson.toFixed(2)}`;
                 this.totalWithTip.textContent = `Rs${total.toFixed(2)}`;
                 this.tipAmount.textContent = `Rs${tip.toFixed(2)}`;
@@ -153,8 +838,351 @@
             }
         }
 
-        // Initialize the calculator
-        const calculator = new SplitBillCalculator();
+        // Split Share Class
+        class SplitShare {
+            constructor() {
+                this.people = JSON.parse(localStorage.getItem('splitSharePeople')) || [];
+                this.expenses = JSON.parse(localStorage.getItem('splitShareExpenses')) || [];
+                this.initializeElements();
+                this.attachEventListeners();
+                this.render();
+            }
+
+            initializeElements() {
+                this.peopleGrid = document.getElementById('peopleGrid');
+                this.expenseSection = document.getElementById('expenseSection');
+                this.expensesSection = document.getElementById('expensesSection');
+                this.expensesList = document.getElementById('expensesList');
+                this.settlementsSection = document.getElementById('settlementsSection');
+                this.settlementsList = document.getElementById('settlementsList');
+            }
+
+            attachEventListeners() {
+                document.getElementById('addPersonBtn').addEventListener('click', () => this.openAddPersonModal());
+                document.getElementById('addExpenseBtn').addEventListener('click', () => this.openAddExpenseModal());
+            }
+
+            saveData() {
+                localStorage.setItem('splitSharePeople', JSON.stringify(this.people));
+                localStorage.setItem('splitShareExpenses', JSON.stringify(this.expenses));
+            }
+
+            addPerson(name) {
+                const person = {
+                    id: Date.now(),
+                    name: name,
+                    balance: 0
+                };
+                this.people.push(person);
+                this.saveData();
+                this.render();
+            }
+
+            removePerson(id) {
+                this.people = this.people.filter(p => p.id !== id);
+                this.expenses = this.expenses.filter(e => e.paidBy !== id && !e.splitBetween.includes(id));
+                this.saveData();
+                this.render();
+            }
+
+            addExpense(description, amount, paidBy, splitBetween) {
+                const expense = {
+                    id: Date.now(),
+                    description: description,
+                    amount: parseFloat(amount),
+                    paidBy: paidBy,
+                    splitBetween: splitBetween,
+                    date: new Date().toLocaleDateString()
+                };
+                this.expenses.push(expense);
+                this.updateBalances();
+                this.saveData();
+                this.render();
+            }
+
+            updateBalances() {
+                // Reset all balances
+                this.people.forEach(person => person.balance = 0);
+
+                // Calculate balances based on expenses
+                this.expenses.forEach(expense => {
+                    const paidByPerson = this.people.find(p => p.id === expense.paidBy);
+                    const splitCount = expense.splitBetween.length;
+                    const perPersonAmount = expense.amount / splitCount;
+
+                    // Add the full amount to the person who paid
+                    if (paidByPerson) {
+                        paidByPerson.balance += expense.amount;
+                    }
+
+                    // Subtract the split amount from each person who owes
+                    expense.splitBetween.forEach(personId => {
+                        const person = this.people.find(p => p.id === personId);
+                        if (person) {
+                            person.balance -= perPersonAmount;
+                        }
+                    });
+                });
+            }
+
+            calculateSettlements() {
+                const settlements = [];
+                const people = [...this.people].sort((a, b) => b.balance - a.balance);
+
+                let i = 0, j = people.length - 1;
+
+                while (i < j) {
+                    const debtor = people[j];
+                    const creditor = people[i];
+
+                    if (Math.abs(debtor.balance) < 0.01) {
+                        j--;
+                        continue;
+                    }
+                    if (Math.abs(creditor.balance) < 0.01) {
+                        i++;
+                        continue;
+                    }
+
+                    const amount = Math.min(Math.abs(debtor.balance), creditor.balance);
+                    
+                    if (amount > 0.01) {
+                        settlements.push({
+                            from: debtor,
+                            to: creditor,
+                            amount: amount
+                        });
+
+                        debtor.balance += amount;
+                        creditor.balance -= amount;
+                    }
+                }
+
+                return settlements;
+            }
+
+            render() {
+                this.renderPeople();
+                this.renderExpenses();
+                this.renderSettlements();
+                this.updateExpenseSection();
+            }
+
+            renderPeople() {
+                if (this.people.length === 0) {
+                    this.peopleGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <p>No people added yet. Click "Add Person" to get started!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.peopleGrid.innerHTML = this.people.map(person => `
+                    <div class="person-card">
+                        <div class="person-header">
+                            <div class="person-name">${person.name}</div>
+                            <button class="btn btn-danger btn-small" onclick="splitShare.removePerson(${person.id})">×</button>
+                        </div>
+                        <div class="person-balance ${person.balance > 0 ? 'balance-positive' : person.balance < 0 ? 'balance-negative' : 'balance-zero'}">
+                            ${person.balance > 0 ? '+' : ''}Rs${person.balance.toFixed(2)}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderExpenses() {
+                if (this.expenses.length === 0) {
+                    this.expensesList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <p>No expenses added yet. Add some people and expenses to get started!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.expensesList.innerHTML = this.expenses.map(expense => {
+                    const paidByPerson = this.people.find(p => p.id === expense.paidBy);
+                    const splitPeople = expense.splitBetween.map(id => 
+                        this.people.find(p => p.id === id)?.name
+                    ).filter(Boolean);
+
+                    return `
+                        <div class="expense-item">
+                            <div class="expense-header">
+                                <div class="expense-description">${expense.description}</div>
+                                <div class="expense-amount">Rs${expense.amount.toFixed(2)}</div>
+                            </div>
+                            <div class="expense-details">
+                                Paid by: ${paidByPerson?.name || 'Unknown'}<br>
+                                Split between: ${splitPeople.join(', ')}<br>
+                                Date: ${expense.date}
+                            </div>
+                            <div class="expense-actions">
+                                <button class="btn btn-danger btn-small" onclick="splitShare.removeExpense(${expense.id})">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            renderSettlements() {
+                const settlements = this.calculateSettlements();
+
+                if (settlements.length === 0) {
+                    this.settlementsList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💸</div>
+                            <p>All debts are settled! Everyone's balance is zero.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                this.settlementsList.innerHTML = settlements.map(settlement => `
+                    <div class="settlement-item">
+                        <div class="settlement-info">
+                            ${settlement.from.name} pays ${settlement.to.name}
+                        </div>
+                        <div class="settlement-amount">
+                            Rs${settlement.amount.toFixed(2)}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateExpenseSection() {
+                if (this.people.length > 0) {
+                    this.expenseSection.style.display = 'block';
+                    this.expensesSection.style.display = 'block';
+                    this.settlementsSection.style.display = 'block';
+                } else {
+                    this.expenseSection.style.display = 'none';
+                    this.expensesSection.style.display = 'none';
+                    this.settlementsSection.style.display = 'none';
+                }
+            }
+
+            removeExpense(id) {
+                this.expenses = this.expenses.filter(e => e.id !== id);
+                this.updateBalances();
+                this.saveData();
+                this.render();
+            }
+
+            openAddPersonModal() {
+                document.getElementById('addPersonModal').classList.add('active');
+                document.getElementById('personName').value = '';
+                document.getElementById('personName').focus();
+            }
+
+            openAddExpenseModal() {
+                const modal = document.getElementById('addExpenseModal');
+                const paidBySelect = document.getElementById('expensePaidBy');
+                const splitCheckboxes = document.getElementById('splitBetweenCheckboxes');
+
+                // Populate paid by dropdown
+                paidBySelect.innerHTML = '<option value="">Select who paid</option>' +
+                    this.people.map(person => `<option value="${person.id}">${person.name}</option>`).join('');
+
+                // Populate split between checkboxes
+                splitCheckboxes.innerHTML = this.people.map(person => `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="split_${person.id}" value="${person.id}" checked>
+                        <label for="split_${person.id}">${person.name}</label>
+                    </div>
+                `).join('');
+
+                modal.classList.add('active');
+            }
+        }
+
+        // Navigation
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Update active page
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-page`).classList.add('active');
+        }
+
+        // Modal functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function addPerson() {
+            const name = document.getElementById('personName').value.trim();
+            if (name) {
+                splitShare.addPerson(name);
+                closeModal('addPersonModal');
+            } else {
+                alert('Please enter a name');
+            }
+        }
+
+        function addExpense() {
+            const description = document.getElementById('expenseDescription').value.trim();
+            const amount = document.getElementById('expenseAmount').value;
+            const paidBy = document.getElementById('expensePaidBy').value;
+            const splitBetween = Array.from(document.querySelectorAll('#splitBetweenCheckboxes input:checked'))
+                .map(cb => parseInt(cb.value));
+
+            if (!description || !amount || !paidBy || splitBetween.length === 0) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            splitShare.addExpense(description, amount, paidBy, splitBetween);
+            closeModal('addExpenseModal');
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize calculators
+            window.simpleCalculator = new SimpleCalculator();
+            window.splitShare = new SplitShare();
+
+            // Navigation
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchTab(this.dataset.tab);
+                });
+            });
+
+            // Modal close on outside click
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('active');
+                    }
+                });
+            });
+
+            // Enter key in modals
+            document.getElementById('personName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addPerson();
+            });
+
+            document.getElementById('expenseDescription').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('expenseAmount').focus();
+                }
+            });
+
+            document.getElementById('expenseAmount').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addExpense();
+            });
+        });
     </script>
 </body>
 </html>
