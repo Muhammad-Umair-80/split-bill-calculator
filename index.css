@@ -218,6 +218,17 @@ body {
     transform: translateY(-1px);
 }
 
+.btn-warning {
+    background: #ed8936;
+    color: white;
+    border: none;
+}
+
+.btn-warning:hover {
+    background: #dd6b20;
+    transform: translateY(-1px);
+}
+
 .results {
     margin-top: 32px;
     padding: 24px;
@@ -305,6 +316,11 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+}
+
+.section-actions {
+    display: flex;
+    gap: 8px;
 }
 
 .people-grid {
@@ -591,6 +607,11 @@ body {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+    }
+
+    .section-actions {
+        width: 100%;
+        justify-content: flex-start;
     }
 }
 

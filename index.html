@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modern Split Bill Calculator</title>
-    <link rel="stylesheet" href="index.css">
+   <link rel="stylesheet" href="index.css">
 </head>
 <body>
     <div id="loading" class="loading">Loading Split Bill Calculator...</div>
@@ -22,58 +22,58 @@
     <!-- Simple Calculator Page -->
     <div class="page active" id="simple-page">
         <div class="container">
-    <div class="calculator">
+            <div class="calculator">
                 <h1 class="title">Simple Bill Splitter</h1>
-        
-        <div class="form-group">
+                
+                <div class="form-group">
                     <label class="form-label" for="billAmount">Total Bill Amount (Rs)</label>
                     <input type="number" id="billAmount" class="form-input" placeholder="Enter amount" step="0.01" min="0">
-        </div>
+                </div>
 
-        <div class="form-group">
+                <div class="form-group">
                     <label class="form-label" for="numPeople">Number of People</label>
                     <input type="number" id="numPeople" class="form-input" placeholder="Enter number" min="1">
-        </div>
+                </div>
 
-        <div class="form-group">
+                <div class="form-group">
                     <label class="form-label" for="tipPercentage">Tip Percentage (%)</label>
                     <select id="tipPercentage" class="form-select" title="Select tip percentage">
                         <option value="0" selected>No Tip (0%)</option>
-                <option value="10">Good (10%)</option>
-                <option value="15">Great (15%)</option>
-                <option value="18">Amazing (18%)</option>
+                        <option value="10">Good (10%)</option>
+                        <option value="15">Great (15%)</option>
+                        <option value="18">Amazing (18%)</option>
                         <option value="20">Excellent (20%)</option>
-                <option value="25">Outstanding (25%)</option>
-                <option value="custom">Custom Amount</option>
-            </select>
-        </div>
+                        <option value="25">Outstanding (25%)</option>
+                        <option value="custom">Custom Amount</option>
+                    </select>
+                </div>
 
-        <div id="customTipGroup" class="form-group" style="display: none;">
+                <div id="customTipGroup" class="form-group" style="display: none;">
                     <label class="form-label" for="customTip">Custom Tip Amount (Rs)</label>
                     <input type="number" id="customTip" class="form-input" placeholder="Enter tip amount" step="0.01" min="0">
-        </div>
+                </div>
 
-        <button class="btn btn-primary" id="calculateBtn">Calculate Share</button>
-        <button class="btn btn-secondary" id="randomPayerBtn">Randomly Assign Payer</button>
+                <button class="btn btn-primary" id="calculateBtn">Calculate Share</button>
+                <button class="btn btn-secondary" id="randomPayerBtn">Randomly Assign Payer</button>
 
-        <div class="results" id="results" style="display: none;">
-            <h2 class="results-title">Results</h2>
-            <div class="result-item">
-                <span class="result-label">Each person pays:</span>
-                <span class="result-value result-highlight" id="perPersonAmount">Rs0.00</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Total with Tip:</span>
-                <span class="result-value" id="totalWithTip">Rs0.00</span>
-            </div>
-            <div class="result-item">
-                <span class="result-label">Tip Amount:</span>
-                <span class="result-value" id="tipAmount">Rs0.00</span>
-            </div>
-        </div>
+                <div class="results" id="results" style="display: none;">
+                    <h2 class="results-title">Results</h2>
+                    <div class="result-item">
+                        <span class="result-label">Each person pays:</span>
+                        <span class="result-value result-highlight" id="perPersonAmount">Rs0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total with Tip:</span>
+                        <span class="result-value" id="totalWithTip">Rs0.00</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Tip Amount:</span>
+                        <span class="result-value" id="tipAmount">Rs0.00</span>
+                    </div>
+                </div>
 
-        <div id="payerResult" class="payer-result" style="display: none;">
-            <div class="payer-name" id="selectedPayer">Person 1 pays the bill!</div>
+                <div id="payerResult" class="payer-result" style="display: none;">
+                    <div class="payer-name" id="selectedPayer">Person 1 pays the bill!</div>
                 </div>
             </div>
         </div>
@@ -87,7 +87,10 @@
                 <div class="section">
                     <div class="section-title">
                         <span>👥 People</span>
-                        <button class="btn btn-primary btn-small" id="addPersonBtn">+ Add Person</button>
+                        <div class="section-actions">
+                            <button class="btn btn-primary btn-small" id="addPersonBtn">+ Add Person</button>
+                            <button class="btn btn-warning btn-small" id="clearAllPeopleBtn" style="display: none;">Clear All</button>
+                        </div>
                     </div>
                     <div id="peopleGrid" class="people-grid">
                         <div class="empty-state">
@@ -107,7 +110,10 @@
 
                 <!-- Expenses List -->
                 <div class="section" id="expensesSection" style="display: none;">
-                    <h2 class="section-title">📋 Expenses</h2>
+                    <div class="section-title">
+                        <span>📋 Expenses</span>
+                        <button class="btn btn-warning btn-small" id="clearAllExpensesBtn">Clear All</button>
+                    </div>
                     <div id="expensesList" class="expenses-list">
                         <div class="empty-state">
                             <div class="empty-state-icon">📋</div>
@@ -179,6 +185,31 @@
     </div>
 
     <script>
+        // Session Management
+        class SessionManager {
+            constructor() {
+                this.sessionKey = 'split-bill-session';
+                this.initSession();
+            }
+
+            initSession() {
+                // Check if this is a new session
+                if (!sessionStorage.getItem(this.sessionKey)) {
+                    // New session - clear any existing localStorage data
+                    localStorage.removeItem('splitSharePeople');
+                    localStorage.removeItem('splitShareExpenses');
+                    // Mark this session as initialized
+                    sessionStorage.setItem(this.sessionKey, 'initialized');
+                }
+            }
+
+            clearSession() {
+                sessionStorage.removeItem(this.sessionKey);
+                localStorage.removeItem('splitSharePeople');
+                localStorage.removeItem('splitShareExpenses');
+            }
+        }
+
         // Utility Functions
         function showAlert(containerId, message, type = 'error') {
             const container = document.getElementById(containerId);
@@ -223,55 +254,59 @@
             }
 
             attachEventListeners() {
-    this.calculateBtn.addEventListener('click', () => {
-        try {
-            this.calculate();
-        } catch (error) {
-            console.error('Calculate button error:', error);
-            alert('Error calculating. Please check your inputs.');
-        }
-    });
-    
-    this.randomPayerBtn.addEventListener('click', () => this.assignRandomPayer());
-    
-    this.tipPercentage.addEventListener('change', () => {
-        if (this.tipPercentage.value === 'custom') {
-            this.customTipGroup.style.display = 'block';
-            this.customTip.focus();
-        } else {
-            this.customTipGroup.style.display = 'none';
-            this.customTip.value = '';
-        }
-    });
+                this.calculateBtn.addEventListener('click', () => this.calculate());
+                this.randomPayerBtn.addEventListener('click', () => this.assignRandomPayer());
+                
+                this.tipPercentage.addEventListener('change', () => {
+                    if (this.tipPercentage.value === 'custom') {
+                        this.customTipGroup.style.display = 'block';
+                        this.customTip.focus();
+                    } else {
+                        this.customTipGroup.style.display = 'none';
+                        this.customTip.value = '';
+                    }
+                });
 
-    // Real-time calculation
-    [this.billAmount, this.numPeople, this.customTip].forEach(input => {
-        input.addEventListener('input', () => {
-            if (this.isValidInput()) {
-                try {
-                    this.calculate();
-                } catch (error) {
-                    console.error('Real-time calculation error:', error);
-                    this.results.style.display = 'none';
+                // Real-time calculation
+                [this.billAmount, this.numPeople, this.customTip].forEach(input => {
+                    input.addEventListener('input', () => {
+                        if (this.isValidInput()) {
+                            this.calculate();
+                        }
+                    });
+                });
+
+                this.tipPercentage.addEventListener('change', () => {
+                    if (this.isValidInput()) {
+                        this.calculate();
+                    }
+                });
+            }
+
+            isValidInput() {
+                const bill = parseFloat(this.billAmount.value);
+                const people = parseInt(this.numPeople.value);
+                return bill > 0 && people > 0;
+            }
+
+            getTipAmount() {
+                const bill = parseFloat(this.billAmount.value) || 0;
+                
+                if (this.tipPercentage.value === 'custom') {
+                    return parseFloat(this.customTip.value) || 0;
+                } else {
+                    const percentage = parseFloat(this.tipPercentage.value) || 0;
+                    return (bill * percentage) / 100;
                 }
             }
-        });
-    });
 
-    this.tipPercentage.addEventListener('change', () => {
-        if (this.isValidInput()) {
-            try {
-                this.calculate();
-            } catch (error) {
-                console.error('Tip calculation error:', error);
-                this.results.style.display = 'none';
-            }
-        }
-    });
-}
-                // Real-time calculation
-                
-            isValidInput() {
+            calculate() {
+                if (!this.isValidInput()) {
+                    this.results.style.display = 'none';
+                    this.payerResult.style.display = 'none';
+                    return;
+                }
+
                 const bill = parseFloat(this.billAmount.value);
                 const people = parseInt(this.numPeople.value);
                 const tip = this.getTipAmount();
@@ -300,42 +335,12 @@
         // Split Share Class
         class SplitShare {
             constructor() {
-    // Generate a unique session ID for new visitors
-    this.sessionId = this.getOrCreateSessionId();
-    
-    this.people = this.loadData('splitSharePeople') || [];
-    this.expenses = this.loadData('splitShareExpenses') || [];
-    this.initializeElements();
-    this.attachEventListeners();
-    this.render();
-}
-
-clearAllData() {
-    if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-        this.people = [];
-        this.expenses = [];
-        localStorage.removeItem('splitSharePeople');
-        localStorage.removeItem('splitShareExpenses');
-        this.saveData();
-        this.render();
-    }
-}
-
-// Add this new method after the constructor:
-getOrCreateSessionId() {
-    let sessionId = sessionStorage.getItem('splitBillSessionId');
-    if (!sessionId) {
-        // New visitor - generate new session ID and clear old data
-        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        sessionStorage.setItem('splitBillSessionId', sessionId);
-        
-        // Clear any existing data for fresh start
-        localStorage.removeItem('splitSharePeople');
-        localStorage.removeItem('splitShareExpenses');
-    }
-    return sessionId;
-}
-            
+                this.people = this.loadData('splitSharePeople') || [];
+                this.expenses = this.loadData('splitShareExpenses') || [];
+                this.initializeElements();
+                this.attachEventListeners();
+                this.render();
+            }
 
             initializeElements() {
                 this.peopleGrid = document.getElementById('peopleGrid');
@@ -344,18 +349,34 @@ getOrCreateSessionId() {
                 this.expensesList = document.getElementById('expensesList');
                 this.settlementsSection = document.getElementById('settlementsSection');
                 this.settlementsList = document.getElementById('settlementsList');
+                this.clearAllPeopleBtn = document.getElementById('clearAllPeopleBtn');
+                this.clearAllExpensesBtn = document.getElementById('clearAllExpensesBtn');
             }
 
             attachEventListeners() {
                 document.getElementById('addPersonBtn').addEventListener('click', () => this.openAddPersonModal());
                 document.getElementById('addExpenseBtn').addEventListener('click', () => this.openAddExpenseModal());
+                this.clearAllPeopleBtn.addEventListener('click', () => this.clearAllPeople());
+                this.clearAllExpensesBtn.addEventListener('click', () => this.clearAllExpenses());
             }
 
-            // Remove persistent storage - data only exists in memory during the session
+            loadData(key) {
+                try {
+                    const data = localStorage.getItem(key);
+                    return data ? JSON.parse(data) : null;
+                } catch (error) {
+                    console.error(`Error loading ${key}:`, error);
+                    return null;
+                }
+            }
+
             saveData() {
-                // Data is only stored in memory (this.people and this.expenses)
-                // No localStorage saving - fresh data for each session
-                console.log('Data saved to memory only - fresh for each session');
+                try {
+                    localStorage.setItem('splitSharePeople', JSON.stringify(this.people));
+                    localStorage.setItem('splitShareExpenses', JSON.stringify(this.expenses));
+                } catch (error) {
+                    console.error('Error saving data:', error);
+                }
             }
 
             addPerson(name) {
@@ -383,7 +404,6 @@ getOrCreateSessionId() {
                 this.saveData();
                 this.render();
                 return true;
-                
             }
 
             removePerson(id) {
@@ -404,6 +424,24 @@ getOrCreateSessionId() {
                 );
                 this.saveData();
                 this.render();
+            }
+
+            clearAllPeople() {
+                if (confirm('Are you sure you want to remove all people? This will also clear all expenses.')) {
+                    this.people = [];
+                    this.expenses = [];
+                    this.saveData();
+                    this.render();
+                }
+            }
+
+            clearAllExpenses() {
+                if (confirm('Are you sure you want to clear all expenses?')) {
+                    this.expenses = [];
+                    this.updateBalances();
+                    this.saveData();
+                    this.render();
+                }
             }
 
             addExpense(description, amount, paidBy, splitBetween) {
@@ -543,9 +581,11 @@ getOrCreateSessionId() {
                             <p>No people added yet. Click "Add Person" to get started!</p>
                         </div>
                     `;
+                    this.clearAllPeopleBtn.style.display = 'none';
                     return;
                 }
 
+                this.clearAllPeopleBtn.style.display = 'block';
                 this.peopleGrid.innerHTML = this.people.map(person => `
                     <div class="person-card">
                         <div class="person-header">
@@ -696,14 +736,6 @@ getOrCreateSessionId() {
                 modal.classList.add('active');
                 document.getElementById('expenseDescription').focus();
             }
-
-            clearAllData() {
-                if (confirm('Are you sure you want to clear all data? This will reset everything.')) {
-                    this.people = [];
-                    this.expenses = [];
-                    this.render();
-                }
-            }
         }
 
         // Navigation Functions
@@ -746,13 +778,16 @@ getOrCreateSessionId() {
         }
 
         // Global Variables
-        let simpleCalculator, splitShare;
+        let simpleCalculator, splitShare, sessionManager;
 
         // Initialize Application
         document.addEventListener('DOMContentLoaded', function() {
             try {
                 // Hide loading indicator
                 document.getElementById('loading').style.display = 'none';
+                
+                // Initialize session management
+                sessionManager = new SessionManager();
                 
                 // Initialize calculators
                 simpleCalculator = new SimpleCalculator();
@@ -811,7 +846,7 @@ getOrCreateSessionId() {
                     setTimeout(() => document.getElementById('billAmount').focus(), 100);
                 });
 
-                console.log('Application initialized successfully');
+                console.log('Application initialized successfully with session management');
             } catch (error) {
                 console.error('Error initializing application:', error);
                 document.getElementById('loading').innerHTML = 'Error loading application. Please refresh the page.';
@@ -820,26 +855,3 @@ getOrCreateSessionId() {
     </script>
 </body>
 </html>
-                return bill > 0 && people > 0;
-            }
-
-            getTipAmount() {
-                const bill = parseFloat(this.billAmount.value) || 0;
-                
-                if (this.tipPercentage.value === 'custom') {
-                    return parseFloat(this.customTip.value) || 0;
-                } else {
-                    const percentage = parseFloat(this.tipPercentage.value) || 0;
-                    return (bill * percentage) / 100;
-                }
-            }
-
-            calculate() {
-                if (!this.isValidInput()) {
-                    this.results.style.display = 'none';
-                    this.payerResult.style.display = 'none';
-                    return;
-                }
-
-                const bill = parseFloat(this.billAmount.value);
-                const people = parseInt(this.numPeople.value);
