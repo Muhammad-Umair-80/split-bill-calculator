@@ -10,13 +10,15 @@
     <div id="loading" class="loading">Loading Split Bill Calculator...</div>
     
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-tabs">
-                <button class="nav-tab active" data-tab="simple">Simple Calculator</button>
-                <button class="nav-tab" data-tab="split">Split Share</button>
-            </div>
-        </div>
+    <nav class="custom-navbar">
+      <ul class="custom-nav-list">
+        <li>
+          <button class="custom-nav-tab active" id="tab-simple" type="button">Simple Calculator</button>
+        </li>
+        <li>
+          <button class="custom-nav-tab" id="tab-split" type="button">Split Share</button>
+        </li>
+      </ul>
     </nav>
 
     <!-- Simple Calculator Page -->
@@ -741,10 +743,10 @@
         // Navigation Functions
         function switchTab(tabName) {
             // Update active tab
-            document.querySelectorAll('.nav-tab').forEach(tab => {
+            document.querySelectorAll('.custom-nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
 
             // Update active page
             document.querySelectorAll('.page').forEach(page => {
@@ -794,9 +796,9 @@
                 splitShare = new SplitShare();
 
                 // Navigation event listeners
-                document.querySelectorAll('.nav-tab').forEach(tab => {
+                document.querySelectorAll('.custom-nav-tab').forEach(tab => {
                     tab.addEventListener('click', function() {
-                        switchTab(this.dataset.tab);
+                        switchTab(this.id.split('-')[1]);
                     });
                 });
 
