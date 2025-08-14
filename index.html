@@ -220,31 +220,71 @@
                 <button class="close-btn" onclick="closeModal('addExpenseModal')">&times;</button>
             </div>
             <div id="addExpenseAlert"></div>
+            
             <div class="form-group">
                 <label class="form-label" for="expenseDescription">Description</label>
                 <input type="text" id="expenseDescription" class="form-input" placeholder="e.g., Dinner at Pizza Place" maxlength="50">
             </div>
+            
             <div class="form-group">
                 <label class="form-label" for="expenseAmount">Amount (Rs)</label>
                 <input type="number" id="expenseAmount" class="form-input" placeholder="Enter amount" step="0.01" min="0.01">
             </div>
+            
             <div class="form-group">
                 <label class="form-label" for="expensePaidBy">Paid By</label>
                 <select id="expensePaidBy" class="form-select" title="Select who paid for this expense">
                     <option value="">Select who paid</option>
                 </select>
             </div>
+            
             <div class="form-group">
-                <label class="form-label">Split Between</label>
-                <div id="splitBetweenCheckboxes" class="checkbox-group">
-                    <!-- Checkboxes will be populated dynamically -->
+                <label class="form-label">Split Method</label>
+                <div class="split-method-toggle">
+                    <button type="button" id="equalSplitBtn" class="btn-toggle active">Equal Split</button>
+                    <button type="button" id="customSplitBtn" class="btn-toggle">Custom Split</button>
                 </div>
+
+                <div id="customSplitSection" class="custom-shares-container">
+                    <div class="form-group">
+                        <label class="form-label" for="shareMode">Share Mode</label>
+                        <select id="shareMode" class="form-select">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (Rs)</option>
+                        </select>
+                    </div>
+                    <div id="customShares" class="custom-shares-grid"></div>
+                </div>
+
+                <label class="form-label">Split Between</label>
+                <div id="splitBetweenCheckboxes" class="checkbox-group"></div>
             </div>
-            <button class="btn btn-primary" onclick="addExpense()">Add Expense</button>
+            
+            <button class="btn btn-primary" id="addExpenseSubmitBtn" onclick="addExpense()">Add Expense</button>
         </div>
     </div>
 
     <script>
+        // Remove loading screen
+        window.addEventListener('load', () => {
+            document.getElementById('loading').style.display = 'none';
+        });
+
+        // Navigation Functions
+        function switchTab(tabName) {
+            document.querySelectorAll('.custom-nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(`${tabName}-page`).classList.add('active');
+        }
+
+        // Attach navigation events
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('tab-basic').addEventListener('click', () => switchTab('basic'));
+            document.getElementById('tab-simple').addEventListener('click', () => switchTab('simple'));
+            document.getElementById('tab-split').addEventListener('click', () => switchTab('split'));
+        });
+
         // Session Management
         class SessionManager {
             constructor() {
@@ -269,6 +309,9 @@
                 localStorage.removeItem('splitShareExpenses');
             }
         }
+
+        // Initialize session management
+        const sessionManager = new SessionManager();
 
         // Utility Functions
         function showAlert(containerId, message, type = 'error') {
@@ -618,6 +661,33 @@
                 document.getElementById('addExpenseBtn').addEventListener('click', () => this.openAddExpenseModal());
                 this.clearAllPeopleBtn.addEventListener('click', () => this.clearAllPeople());
                 this.clearAllExpensesBtn.addEventListener('click', () => this.clearAllExpenses());
+
+                // Split method toggle event listeners
+                document.getElementById('equalSplitBtn').addEventListener('click', () => this.setSplitMethod('equal'));
+                document.getElementById('customSplitBtn').addEventListener('click', () => this.setSplitMethod('custom'));
+                
+                // Share mode change listener
+                document.getElementById('shareMode').addEventListener('change', () => {
+                    this.renderCustomShares();
+                    this.validateCustomShares();
+                });
+
+                // Amount change listener for validation
+                document.getElementById('expenseAmount').addEventListener('input', () => {
+                    if (document.getElementById('customSplitBtn').classList.contains('active')) {
+                        this.validateCustomShares();
+                    }
+                });
+            }
+
+            escapeHtml(str) {
+                if (typeof str !== 'string') return '';
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
 
             loadData(key) {
@@ -639,27 +709,46 @@
                 }
             }
 
+            render() {
+                this.renderPeople();
+                this.renderExpenses();
+                this.renderSettlements();
+                this.updateSectionVisibility();
+            }
+
+            updateSectionVisibility() {
+                const hasPeople = this.people.length > 0;
+                const hasExpenses = this.expenses.length > 0;
+                
+                this.expenseSection.style.display = hasPeople ? 'block' : 'none';
+                this.expensesSection.style.display = hasExpenses ? 'block' : 'none';
+                this.settlementsSection.style.display = hasExpenses ? 'block' : 'none';
+            }
+
+            // People Management
+            openAddPersonModal() {
+                const modal = document.getElementById('addPersonModal');
+                modal.classList.add('active');
+                document.getElementById('personName').value = '';
+                document.getElementById('addPersonAlert').innerHTML = '';
+                document.getElementById('personName').focus();
+            }
+
             addPerson(name) {
                 const trimmedName = name.trim();
-                
-                // Validation
                 if (!validateInput(trimmedName, 'string', null, 30)) {
                     showAlert('addPersonAlert', 'Please enter a valid name (1-30 characters)');
                     return false;
                 }
-
-                // Check for duplicate names
                 if (this.people.some(person => person.name.toLowerCase() === trimmedName.toLowerCase())) {
                     showAlert('addPersonAlert', 'A person with this name already exists');
                     return false;
                 }
-
                 const person = {
                     id: Date.now(),
                     name: trimmedName,
                     balance: 0
                 };
-                
                 this.people.push(person);
                 this.saveData();
                 this.render();
@@ -667,17 +756,14 @@
             }
 
             removePerson(id) {
-                // Check if person has any expenses
                 const hasExpenses = this.expenses.some(expense => 
                     expense.paidBy === id || expense.splitBetween.includes(id)
                 );
-
                 if (hasExpenses) {
                     if (!confirm('This person has associated expenses. Removing them will also remove those expenses. Continue?')) {
                         return;
                     }
                 }
-
                 this.people = this.people.filter(p => p.id !== id);
                 this.expenses = this.expenses.filter(e => 
                     e.paidBy !== id && !e.splitBetween.includes(id)
@@ -695,58 +781,115 @@
                 }
             }
 
-            clearAllExpenses() {
-                if (confirm('Are you sure you want to clear all expenses?')) {
-                    this.expenses = [];
-                    this.updateBalances();
-                    this.saveData();
-                    this.render();
+            renderPeople() {
+                if (this.people.length === 0) {
+                    this.peopleGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <p>No people added yet. Click "Add Person" to get started!</p>
+                        </div>
+                    `;
+                    this.clearAllPeopleBtn.style.display = 'none';
+                    return;
                 }
+                this.clearAllPeopleBtn.style.display = 'block';
+                this.peopleGrid.innerHTML = this.people.map(person => `
+                    <div class="person-card">
+                        <div class="person-header">
+                            <span class="person-name">${this.escapeHtml(person.name)}</span>
+                            <button class="btn btn-danger btn-small" onclick="splitShare.removePerson(${person.id})" title="Remove person">×</button>
+                        </div>
+                        <div class="person-balance ${person.balance > 0.01 ? 'balance-positive' : person.balance < -0.01 ? 'balance-negative' : 'balance-zero'}">
+                            ${person.balance > 0 ? '+' : ''}Rs${person.balance.toFixed(2)}
+                        </div>
+                        <div style="font-size: 12px; color: #718096; margin-top: 4px;">
+                            ${person.balance > 0.01 ? 'Gets back' : person.balance < -0.01 ? 'Owes' : 'Settled'}
+                        </div>
+                    </div>
+                `).join('');
             }
 
-            addExpense(description, amount, paidBy, splitBetween) {
-                const trimmedDescription = description.trim();
+            // Expense Management
+            openAddExpenseModal() {
+                if (this.people.length === 0) {
+                    alert('Please add at least one person first!');
+                    return;
+                }
+                const modal = document.getElementById('addExpenseModal');
+                const paidBySelect = document.getElementById('expensePaidBy');
+                const splitCheckboxes = document.getElementById('splitBetweenCheckboxes');
                 
-                // Validation
+                // Reset form
+                document.getElementById('addExpenseAlert').innerHTML = '';
+                document.getElementById('expenseDescription').value = '';
+                document.getElementById('expenseAmount').value = '';
+                
+                // Populate paid by dropdown
+                paidBySelect.innerHTML = '<option value="">Select who paid</option>' +
+                    this.people.map(person => `<option value="${person.id}">${this.escapeHtml(person.name)}</option>`).join('');
+                
+                // Populate split between checkboxes
+                splitCheckboxes.innerHTML = this.people.map(person => `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="split_${person.id}" value="${person.id}" checked>
+                        <label for="split_${person.id}">${this.escapeHtml(person.name)}</label>
+                    </div>
+                `).join('');
+                
+                // Add event listeners for checkboxes
+                document.querySelectorAll('#splitBetweenCheckboxes input').forEach(cb => {
+                    cb.addEventListener('change', () => {
+                        this.renderCustomShares();
+                        this.validateCustomShares();
+                    });
+                });
+                
+                // Reset to equal split
+                this.setSplitMethod('equal');
+                
+                modal.classList.add('active');
+                document.getElementById('expenseDescription').focus();
+            }
+
+            addExpense(description, amount, paidById, splitBetween, splitMethod = 'equal', shares = null, shareMode = null) {
+                const trimmedDescription = description.trim();
                 if (!validateInput(trimmedDescription, 'string', null, 50)) {
                     showAlert('addExpenseAlert', 'Please enter a valid description (1-50 characters)');
                     return false;
                 }
-
                 if (!validateInput(amount, 'number', 0.01)) {
                     showAlert('addExpenseAlert', 'Please enter a valid amount (minimum Rs 0.01)');
                     return false;
                 }
-
-                if (!paidBy) {
+                if (!paidById) {
                     showAlert('addExpenseAlert', 'Please select who paid for this expense');
                     return false;
                 }
-
-                if (!splitBetween || splitBetween.length === 0) {
-                    showAlert('addExpenseAlert', 'Please select at least one person to split the expense');
+                if (splitBetween.length === 0) {
+                    showAlert('addExpenseAlert', 'Please select at least one person to split with');
                     return false;
                 }
-
-                // Verify paidBy and splitBetween IDs exist
-                const paidByExists = this.people.some(p => p.id == paidBy);
-                const allSplitPeopleExist = splitBetween.every(id => this.people.some(p => p.id == id));
-
+                
+                const paidByExists = this.people.some(p => p.id === parseInt(paidById));
+                const allSplitPeopleExist = splitBetween.every(id => this.people.some(p => p.id === id));
                 if (!paidByExists || !allSplitPeopleExist) {
                     showAlert('addExpenseAlert', 'Invalid person selection. Please refresh and try again.');
                     return false;
                 }
-
-                const expense = {
+                
+                const newExpense = {
                     id: Date.now(),
-                    description: trimmedDescription,
+                    description,
                     amount: parseFloat(amount),
-                    paidBy: parseInt(paidBy),
-                    splitBetween: splitBetween.map(id => parseInt(id)),
-                    date: new Date().toLocaleDateString()
+                    paidBy: parseInt(paidById),
+                    splitBetween: splitBetween,
+                    splitMethod,
+                    shares,
+                    shareMode,
+                    date: new Date().toISOString()
                 };
                 
-                this.expenses.push(expense);
+                this.expenses.push(newExpense);
                 this.updateBalances();
                 this.saveData();
                 this.render();
@@ -762,104 +905,56 @@
                 }
             }
 
+            clearAllExpenses() {
+                if (confirm('Are you sure you want to clear all expenses?')) {
+                    this.expenses = [];
+                    this.updateBalances();
+                    this.saveData();
+                    this.render();
+                }
+            }
+
             updateBalances() {
                 // Reset all balances
                 this.people.forEach(person => person.balance = 0);
-
-                // Calculate balances based on expenses
+                
+                // Process each expense
                 this.expenses.forEach(expense => {
                     const paidByPerson = this.people.find(p => p.id === expense.paidBy);
-                    const splitCount = expense.splitBetween.length;
-                    const perPersonAmount = expense.amount / splitCount;
-
-                    // Add the full amount to the person who paid
                     if (paidByPerson) {
+                        // Add the full amount to the payer's balance
                         paidByPerson.balance += expense.amount;
                     }
-
-                    // Subtract the split amount from each person who owes
-                    expense.splitBetween.forEach(personId => {
-                        const person = this.people.find(p => p.id === personId);
-                        if (person) {
-                            person.balance -= perPersonAmount;
+                    
+                    // Subtract each person's share
+                    if (expense.splitMethod === 'equal') {
+                        const splitCount = expense.splitBetween.length;
+                        if (splitCount > 0) {
+                            const perPersonAmount = expense.amount / splitCount;
+                            expense.splitBetween.forEach(personId => {
+                                const person = this.people.find(p => p.id === personId);
+                                if (person) {
+                                    person.balance -= perPersonAmount;
+                                }
+                            });
                         }
-                    });
+                    } else if (expense.splitMethod === 'custom' && expense.shares) {
+                        // Handle custom split
+                        for (const personId in expense.shares) {
+                            const person = this.people.find(p => p.id === parseInt(personId));
+                            if (person) {
+                                let shareAmount = 0;
+                                const shareValue = parseFloat(expense.shares[personId]);
+                                if (expense.shareMode === 'percentage') {
+                                    shareAmount = (expense.amount * shareValue) / 100;
+                                } else { // fixed amount
+                                    shareAmount = shareValue;
+                                }
+                                person.balance -= shareAmount;
+                            }
+                        }
+                    }
                 });
-            }
-
-            calculateSettlements() {
-                const settlements = [];
-                const people = [...this.people].map(p => ({...p})); // Create copies to avoid modifying original
-                
-                // Sort by balance (highest positive first)
-                people.sort((a, b) => b.balance - a.balance);
-
-                let creditors = people.filter(p => p.balance > 0.01);
-                let debtors = people.filter(p => p.balance < -0.01);
-
-                while (creditors.length > 0 && debtors.length > 0) {
-                    const creditor = creditors[0];
-                    const debtor = debtors[0];
-                    
-                    const amount = Math.min(creditor.balance, Math.abs(debtor.balance));
-                    
-                    if (amount > 0.01) {
-                        settlements.push({
-                            from: debtor,
-                            to: creditor,
-                            amount: amount
-                        });
-
-                        creditor.balance -= amount;
-                        debtor.balance += amount;
-                    }
-
-                    // Remove settled people
-                    if (creditor.balance < 0.01) {
-                        creditors.shift();
-                    }
-                    if (Math.abs(debtor.balance) < 0.01) {
-                        debtors.shift();
-                    }
-                }
-
-                return settlements;
-            }
-
-            render() {
-                this.renderPeople();
-                this.renderExpenses();
-                this.renderSettlements();
-                this.updateSectionVisibility();
-            }
-
-            renderPeople() {
-                if (this.people.length === 0) {
-                    this.peopleGrid.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">👥</div>
-                            <p>No people added yet. Click "Add Person" to get started!</p>
-                        </div>
-                    `;
-                    this.clearAllPeopleBtn.style.display = 'none';
-                    return;
-                }
-
-                this.clearAllPeopleBtn.style.display = 'block';
-                this.peopleGrid.innerHTML = this.people.map(person => `
-                    <div class="person-card">
-                        <div class="person-header">
-                            <div class="person-name">${this.escapeHtml(person.name)}</div>
-                            <button class="btn btn-danger btn-small" onclick="splitShare.removePerson(${person.id})" title="Remove ${this.escapeHtml(person.name)}">×</button>
-                        </div>
-                        <div class="person-balance ${person.balance > 0.01 ? 'balance-positive' : person.balance < -0.01 ? 'balance-negative' : 'balance-zero'}">
-                            ${person.balance > 0 ? '+' : ''}Rs${person.balance.toFixed(2)}
-                        </div>
-                        <div style="font-size: 12px; color: #718096; margin-top: 4px;">
-                            ${person.balance > 0.01 ? 'Gets back' : person.balance < -0.01 ? 'Owes' : 'Settled'}
-                        </div>
-                    </div>
-                `).join('');
             }
 
             renderExpenses() {
@@ -872,14 +967,27 @@
                     `;
                     return;
                 }
-
+                
                 this.expensesList.innerHTML = this.expenses.map(expense => {
                     const paidByPerson = this.people.find(p => p.id === expense.paidBy);
-                    const splitPeople = expense.splitBetween
-                        .map(id => this.people.find(p => p.id === id)?.name)
-                        .filter(Boolean);
-                    const perPersonAmount = expense.amount / expense.splitBetween.length;
-
+                    let splitDetails = '';
+                    
+                    if (expense.splitMethod === 'equal') {
+                        const splitPeople = expense.splitBetween
+                            .map(id => this.people.find(p => p.id === id)?.name)
+                            .filter(Boolean);
+                        const perPersonAmount = splitPeople.length > 0 ? expense.amount / splitPeople.length : 0;
+                        splitDetails = `<strong>Split between:</strong> ${splitPeople.map(name => this.escapeHtml(name)).join(', ')}<br><strong>Per person:</strong> Rs${perPersonAmount.toFixed(2)}`;
+                    } else if (expense.splitMethod === 'custom' && expense.shares) {
+                        const sharesDetails = Object.entries(expense.shares || {}).map(([personId, share]) => {
+                            const person = this.people.find(p => p.id === parseInt(personId));
+                            if (!person) return '';
+                            const displayShare = expense.shareMode === 'percentage' ? `${share}%` : `Rs${parseFloat(share).toFixed(2)}`;
+                            return `${this.escapeHtml(person.name)}: ${displayShare}`;
+                        }).filter(Boolean).join(', ');
+                        splitDetails = `<strong>Custom Split (${expense.shareMode}):</strong> ${sharesDetails}`;
+                    }
+                    
                     return `
                         <div class="expense-item">
                             <div class="expense-header">
@@ -887,10 +995,9 @@
                                 <div class="expense-amount">Rs${expense.amount.toFixed(2)}</div>
                             </div>
                             <div class="expense-details">
-                                <strong>Paid by:</strong> ${this.escapeHtml(paidByPerson?.name || 'Unknown')}<br>
-                                <strong>Split between:</strong> ${splitPeople.map(name => this.escapeHtml(name)).join(', ')}<br>
-                                <strong>Per person:</strong> Rs${perPersonAmount.toFixed(2)}<br>
-                                <strong>Date:</strong> ${expense.date}
+                                <strong>Paid by:</strong> ${paidByPerson ? this.escapeHtml(paidByPerson.name) : 'N/A'}<br>
+                                ${splitDetails}<br>
+                                <strong>Date:</strong> ${new Date(expense.date).toLocaleDateString()}
                             </div>
                             <div class="expense-actions">
                                 <button class="btn btn-danger btn-small" onclick="splitShare.removeExpense(${expense.id})" title="Delete expense">Delete</button>
@@ -900,9 +1007,169 @@
                 }).join('');
             }
 
+            // Split Method Management
+            setSplitMethod(method) {
+                const equalBtn = document.getElementById('equalSplitBtn');
+                const customBtn = document.getElementById('customSplitBtn');
+                const customSection = document.getElementById('customSplitSection');
+                
+                if (method === 'equal') {
+                    equalBtn.classList.add('active');
+                    customBtn.classList.remove('active');
+                    customSection.classList.remove('active');
+                    // Enable add button for equal split
+                    document.getElementById('addExpenseSubmitBtn').disabled = false;
+                } else {
+                    equalBtn.classList.remove('active');
+                    customBtn.classList.add('active');
+                    customSection.classList.add('active');
+                    this.renderCustomShares();
+                    this.validateCustomShares();
+                }
+            }
+
+            renderCustomShares() {
+                const container = document.getElementById('customShares');
+                const selectedPeople = Array.from(document.querySelectorAll('#splitBetweenCheckboxes input:checked')).map(cb => parseInt(cb.value));
+                const shareMode = document.getElementById('shareMode').value;
+                
+                container.innerHTML = '';
+                
+                if (selectedPeople.length > 0) {
+                    selectedPeople.forEach(personId => {
+                        const person = this.people.find(p => p.id === personId);
+                        if (person) {
+                            const item = document.createElement('div');
+                            item.className = 'custom-share-item';
+                            const placeholder = shareMode === 'percentage' ? 'Enter %' : 'Enter Rs';
+                            item.innerHTML = `
+                                <label for="share-${person.id}">${this.escapeHtml(person.name)}</label>
+                                <input 
+                                    type="number" 
+                                    id="share-${person.id}" 
+                                    class="form-input custom-share-input" 
+                                    data-person-id="${person.id}" 
+                                    placeholder="${placeholder}" 
+                                    step="0.01" 
+                                    min="0"
+                                    oninput="splitShare.validateCustomShares()"
+                                >
+                            `;
+                            container.appendChild(item);
+                        }
+                    });
+                }
+                
+                this.validateCustomShares();
+            }
+
+            validateCustomShares() {
+                const addExpenseBtn = document.getElementById('addExpenseSubmitBtn');
+                const splitMethod = document.getElementById('customSplitBtn').classList.contains('active') ? 'custom' : 'equal';
+                
+                if (splitMethod === 'equal') {
+                    addExpenseBtn.disabled = false;
+                    document.getElementById('customShares').querySelectorAll('.alert').forEach(e => e.remove());
+                    return;
+                }
+                
+                const shareMode = document.getElementById('shareMode').value;
+                const totalAmount = parseFloat(document.getElementById('expenseAmount').value) || 0;
+                const inputs = Array.from(document.querySelectorAll('.custom-share-input'));
+                
+                let sum = 0;
+                let allFilled = true;
+                
+                inputs.forEach(input => {
+                    const value = parseFloat(input.value) || 0;
+                    if (!input.value || input.value === '') {
+                        allFilled = false;
+                    }
+                    sum += value;
+                });
+                
+                let isValid = false;
+                let errorMsg = '';
+                
+                if (inputs.length > 0 && allFilled && totalAmount > 0) {
+                    if (shareMode === 'percentage') {
+                        isValid = Math.abs(sum - 100) < 0.01;
+                        if (!isValid) {
+                            errorMsg = `Total must be 100%. Current: ${sum.toFixed(2)}%`;
+                        }
+                    } else { // fixed amount
+                        isValid = Math.abs(sum - totalAmount) < 0.01;
+                        if (!isValid) {
+                            errorMsg = `Total must equal Rs${totalAmount.toFixed(2)}. Current: Rs${sum.toFixed(2)}`;
+                        }
+                    }
+                } else {
+                    if (!allFilled) {
+                        errorMsg = 'Please fill all share amounts';
+                    } else if (totalAmount <= 0) {
+                        errorMsg = 'Please enter a valid expense amount first';
+                    }
+                }
+                
+                addExpenseBtn.disabled = !isValid;
+                
+                // Remove existing error messages
+                const container = document.getElementById('customShares');
+                container.querySelectorAll('.alert').forEach(e => e.remove());
+                
+                // Show error message if validation fails
+                if (inputs.length > 0 && errorMsg) {
+                    const errorEl = document.createElement('div');
+                    errorEl.className = 'alert alert-error';
+                    errorEl.textContent = errorMsg;
+                    container.appendChild(errorEl);
+                }
+            }
+
+            // Settlement Logic
+            calculateSettlements() {
+                const settlements = [];
+                const people = [...this.people].map(p => ({...p}));
+                
+                // Sort by balance: creditors (positive) first, then debtors (negative)
+                people.sort((a, b) => b.balance - a.balance);
+                
+                let creditors = people.filter(p => p.balance > 0.01);
+                let debtors = people.filter(p => p.balance < -0.01);
+                
+                // Minimize transactions using greedy algorithm
+                while (creditors.length > 0 && debtors.length > 0) {
+                    const creditor = creditors[0];
+                    const debtor = debtors[0];
+                    
+                    const amount = Math.min(creditor.balance, Math.abs(debtor.balance));
+                    
+                    if (amount > 0.01) {
+                        settlements.push({
+                            from: debtor,
+                            to: creditor,
+                            amount: amount
+                        });
+                        
+                        creditor.balance -= amount;
+                        debtor.balance += amount;
+                    }
+                    
+                    // Remove settled people
+                    if (creditor.balance < 0.01) {
+                        creditors.shift();
+                    }
+                    if (Math.abs(debtor.balance) < 0.01) {
+                        debtors.shift();
+                    }
+                }
+                
+                return settlements;
+            }
+
             renderSettlements() {
                 const settlements = this.calculateSettlements();
-
+                
                 if (settlements.length === 0) {
                     this.settlementsList.innerHTML = `
                         <div class="empty-state">
@@ -912,18 +1179,18 @@
                     `;
                     return;
                 }
-
+                
                 this.settlementsList.innerHTML = settlements.map((settlement, index) => `
                     <div class="settlement-item">
                         <div class="settlement-info">
-                            <strong>${this.escapeHtml(settlement.from.name)}</strong> pays <strong>${this.escapeHtml(settlement.to.name)}</strong>
+                            <strong>${this.escapeHtml(settlement.from.name)}</strong> owes <strong>${this.escapeHtml(settlement.to.name)}</strong>
                         </div>
                         <div class="settlement-amount">
                             Rs${settlement.amount.toFixed(2)}
                         </div>
                     </div>
                 `).join('');
-
+                
                 // Add summary
                 const totalTransfers = settlements.length;
                 const totalAmount = settlements.reduce((sum, s) => sum + s.amount, 0);
@@ -937,80 +1204,6 @@
                     </div>
                 `;
             }
-
-            updateSectionVisibility() {
-                const hasPeople = this.people.length > 0;
-                const hasExpenses = this.expenses.length > 0;
-                
-                this.expenseSection.style.display = hasPeople ? 'block' : 'none';
-                this.expensesSection.style.display = hasExpenses ? 'block' : 'none';
-                this.settlementsSection.style.display = hasExpenses ? 'block' : 'none';
-            }
-
-            escapeHtml(unsafe) {
-                return unsafe
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
-            }
-
-            openAddPersonModal() {
-                const modal = document.getElementById('addPersonModal');
-                modal.classList.add('active');
-                document.getElementById('personName').value = '';
-                document.getElementById('addPersonAlert').innerHTML = '';
-                document.getElementById('personName').focus();
-            }
-
-            openAddExpenseModal() {
-                if (this.people.length === 0) {
-                    alert('Please add at least one person first!');
-                    return;
-                }
-
-                const modal = document.getElementById('addExpenseModal');
-                const paidBySelect = document.getElementById('expensePaidBy');
-                const splitCheckboxes = document.getElementById('splitBetweenCheckboxes');
-
-                // Clear previous alerts
-                document.getElementById('addExpenseAlert').innerHTML = '';
-
-                // Clear form
-                document.getElementById('expenseDescription').value = '';
-                document.getElementById('expenseAmount').value = '';
-
-                // Populate paid by dropdown
-                paidBySelect.innerHTML = '<option value="">Select who paid</option>' +
-                    this.people.map(person => `<option value="${person.id}">${this.escapeHtml(person.name)}</option>`).join('');
-
-                // Populate split between checkboxes
-                splitCheckboxes.innerHTML = this.people.map(person => `
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="split_${person.id}" value="${person.id}" checked>
-                        <label for="split_${person.id}">${this.escapeHtml(person.name)}</label>
-                    </div>
-                `).join('');
-
-                modal.classList.add('active');
-                document.getElementById('expenseDescription').focus();
-            }
-        }
-
-        // Navigation Functions
-        function switchTab(tabName) {
-            // Update active tab
-            document.querySelectorAll('.custom-nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-
-            // Update active page
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-            document.getElementById(`${tabName}-page`).classList.add('active');
         }
 
         // Modal Functions
@@ -1018,6 +1211,7 @@
             document.getElementById(modalId).classList.remove('active');
         }
 
+        // Global Functions for onclick handlers
         function addPerson() {
             const name = document.getElementById('personName').value;
             if (splitShare.addPerson(name)) {
@@ -1028,84 +1222,45 @@
         function addExpense() {
             const description = document.getElementById('expenseDescription').value;
             const amount = document.getElementById('expenseAmount').value;
-            const paidBy = document.getElementById('expensePaidBy').value;
-            const splitBetween = Array.from(document.querySelectorAll('#splitBetweenCheckboxes input:checked'))
-                .map(cb => parseInt(cb.value));
+            const paidById = document.getElementById('expensePaidBy').value;
+            const splitMethod = document.getElementById('customSplitBtn').classList.contains('active') ? 'custom' : 'equal';
+            
+            let splitBetween = Array.from(document.querySelectorAll('#splitBetweenCheckboxes input:checked')).map(el => parseInt(el.value));
+            let shares = null;
+            let shareMode = null;
 
-            if (splitShare.addExpense(description, amount, paidBy, splitBetween)) {
+            if (splitMethod === 'custom') {
+                shareMode = document.getElementById('shareMode').value;
+                shares = {};
+                document.querySelectorAll('.custom-share-input').forEach(input => {
+                    if (input.value) {
+                        shares[input.dataset.personId] = parseFloat(input.value);
+                    }
+                });
+                splitBetween = Object.keys(shares).map(id => parseInt(id));
+            }
+
+            if (splitShare.addExpense(description, amount, paidById, splitBetween, splitMethod, shares, shareMode)) {
                 closeModal('addExpenseModal');
             }
         }
 
-        // Global Variables
-        let simpleCalculator, basicCalculator, splitShare, sessionManager;
+        // Initialize everything
+        const basicCalculator = new BasicCalculator();
+        const simpleCalculator = new SimpleCalculator();
+        const splitShare = new SplitShare();
 
-        // Initialize Application
-        document.addEventListener('DOMContentLoaded', function() {
-            try {
-                // Hide loading indicator
-                document.getElementById('loading').style.display = 'none';
-                
-                // Initialize session management
-                sessionManager = new SessionManager();
-                
-                // Initialize calculators
-                simpleCalculator = new SimpleCalculator();
-                basicCalculator = new BasicCalculator();
-                splitShare = new SplitShare();
+        // Close modals when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
 
-                // Navigation event listeners
-                document.querySelectorAll('.custom-nav-tab').forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        switchTab(this.id.split('-')[1]);
-                    });
-                });
-
-                // Modal close on outside click
-                document.querySelectorAll('.modal').forEach(modal => {
-                    modal.addEventListener('click', function(e) {
-                        if (e.target === this) {
-                            this.classList.remove('active');
-                        }
-                    });
-                });
-
-                // Keyboard shortcuts
-                document.addEventListener('keydown', function(e) {
-                    // Escape key closes modals
-                    if (e.key === 'Escape') {
-                        document.querySelectorAll('.modal.active').forEach(modal => {
-                            modal.classList.remove('active');
-                        });
-                    }
-                });
-
-                // Enter key handlers for modals
-                document.getElementById('personName').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addPerson();
-                    }
-                });
-
-                document.getElementById('expenseDescription').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        document.getElementById('expenseAmount').focus();
-                    }
-                });
-
-                document.getElementById('expenseAmount').addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        document.getElementById('expensePaidBy').focus();
-                    }
-                });
-
-                console.log('Application initialized successfully with Basic Calculator');
-            } catch (error) {
-                console.error('Error initializing application:', error);
-                document.getElementById('loading').innerHTML = 'Error loading application. Please refresh the page.';
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => closeModal(modal.id));
             }
         });
     </script>
