@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - Split Bill Calculator</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Authentication...</div>
+    </div>
+
+    <!-- Main Authentication Container -->
+    <div class="auth-container" id="authContainer" style="display: none;">
+        <!-- Logo/Header Section -->
+        <div class="auth-header">
+            <div class="logo">
+                <span class="logo-icon">💰</span>
+                <h1 class="logo-text">Split Bill Calculator</h1>
+            </div>
+            <p class="auth-subtitle">Manage your expenses with friends and family</p>
+        </div>
+
+        <!-- Authentication Form Container -->
+        <div class="auth-form-container">
+            <!-- Form Toggle Buttons -->
+            <div class="form-toggle">
+                <button class="toggle-btn active" id="signInToggle" onclick="switchForm('signin')">
+                    Sign In
+                </button>
+                <button class="toggle-btn" id="signUpToggle" onclick="switchForm('signup')">
+                    Sign Up
+                </button>
+            </div>
+
+            <!-- Sign In Form -->
+            <form id="signInForm" class="auth-form active">
+                <h2 class="form-title">Welcome Back!</h2>
+                <p class="form-subtitle">Sign in to access your account</p>
+                
+                <div class="form-group">
+                    <label for="signInUsername" class="form-label">Username</label>
+                    <input 
+                        type="text" 
+                        id="signInUsername" 
+                        class="form-input" 
+                        placeholder="Enter your username"
+                        required
+                    >
+                    <div class="input-icon">👤</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signInPassword" class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        id="signInPassword" 
+                        class="form-input" 
+                        placeholder="Enter your password"
+                        required
+                    >
+                    <div class="input-icon">🔒</div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="signInBtn">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-loading" style="display: none;">Signing In...</span>
+                </button>
+
+                <div id="signInAlert" class="alert" style="display: none;"></div>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form id="signUpForm" class="auth-form">
+                <h2 class="form-title">Create Account</h2>
+                <p class="form-subtitle">Join us to start managing your expenses</p>
+                
+                <div class="form-group">
+                    <label for="signUpUsername" class="form-label">Username</label>
+                    <input 
+                        type="text" 
+                        id="signUpUsername" 
+                        class="form-input" 
+                        placeholder="Choose a username"
+                        required
+                        maxlength="30"
+                    >
+                    <div class="input-icon">👤</div>
+                    <div class="input-hint">3-30 characters, letters and numbers only</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signUpEmail" class="form-label">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="signUpEmail" 
+                        class="form-input" 
+                        placeholder="Enter your email"
+                        required
+                    >
+                    <div class="input-icon">📧</div>
+                    <div class="input-hint">We'll never share your email</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signUpPassword" class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        id="signUpPassword" 
+                        class="form-input" 
+                        placeholder="Create a strong password"
+                        required
+                        minlength="8"
+                    >
+                    <div class="input-icon">🔒</div>
+                    <div class="input-hint">Minimum 8 characters</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="signUpConfirmPassword" class="form-label">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="signUpConfirmPassword" 
+                        class="form-input" 
+                        placeholder="Confirm your password"
+                        required
+                    >
+                    <div class="input-icon">🔒</div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="agreeTerms" required>
+                        <span class="checkmark"></span>
+                        I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="signUpBtn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loading" style="display: none;">Creating Account...</span>
+                </button>
+
+                <div id="signUpAlert" class="alert" style="display: none;"></div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+            <p>&copy; 2024 Split Bill Calculator. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="success-icon">✅</div>
+                <h3 id="successTitle">Success!</h3>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Your account has been created successfully!</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeSuccessModal()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
