@@ -97,34 +97,40 @@
                 </div>
 
                 <!-- Calculator Buttons -->
-                <div class="calc-buttons">
-                    <!-- First Row -->
-                    <button class="calc-btn calc-btn-clear" onclick="basicCalculator.clear()">C</button>
-                    <button class="calc-btn calc-btn-backspace" onclick="basicCalculator.backspace()">←</button>
-                    <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('÷')">÷</button>
+                <div class="calc-buttons-container">
+                    <!-- Left Side - Numbers and Controls -->
+                    <div class="calc-numbers-section">
+                        <!-- Control Buttons -->
+                        <button class="calc-btn calc-btn-clear" onclick="basicCalculator.clear()">C</button>
+                        <button class="calc-btn calc-btn-backspace" onclick="basicCalculator.backspace()">←</button>
+                        
+                        <!-- Number Grid -->
+                        <div class="calc-numbers-grid">
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('7')">7</button>
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('8')">8</button>
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('9')">9</button>
+                            
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('4')">4</button>
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('5')">5</button>
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('6')">6</button>
+                            
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('1')">1</button>
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('2')">2</button>
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('3')">3</button>
+                            
+                            <button class="calc-btn calc-btn-number calc-btn-zero" onclick="basicCalculator.appendNumber('0')">0</button>
+                            <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendDecimal()">.</button>
+                        </div>
+                    </div>
                     
-                    <!-- Second Row -->
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('7')">7</button>
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('8')">8</button>
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('9')">9</button>
-                    <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('×')">×</button>
-                    
-                    <!-- Third Row -->
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('4')">4</button>
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('5')">5</button>
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('6')">6</button>
-                    <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('−')">−</button>
-                    
-                    <!-- Fourth Row -->
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('1')">1</button>
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('2')">2</button>
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendNumber('3')">3</button>
-                    <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('+')">+</button>
-                    
-                    <!-- Fifth Row -->
-                    <button class="calc-btn calc-btn-number calc-btn-zero" onclick="basicCalculator.appendNumber('0')">0</button>
-                    <button class="calc-btn calc-btn-number" onclick="basicCalculator.appendDecimal()">.</button>
-                    <button class="calc-btn calc-btn-equals" onclick="basicCalculator.calculate()">=</button>
+                    <!-- Right Side - Operators -->
+                    <div class="calc-operators-section">
+                        <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('÷')">÷</button>
+                        <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('×')">×</button>
+                        <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('−')">−</button>
+                        <button class="calc-btn calc-btn-operator" onclick="basicCalculator.setOperator('+')">+</button>
+                        <button class="calc-btn calc-btn-equals" onclick="basicCalculator.calculate()">=</button>
+                    </div>
                 </div>
 
                 <!-- Error Display -->
