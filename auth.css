@@ -54,6 +54,7 @@ body {
     justify-content: center;
     padding: 20px;
     animation: fadeInUp 0.6s ease;
+    
 }
 
 @keyframes fadeInUp {
@@ -125,6 +126,47 @@ body {
     font-weight: 400;
 }
 
+/* Server Connection Status */
+.server-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-indicator {
+    font-size: 12px;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.connected {
+    color: #4fd1c7;
+    animation: none;
+}
+
+.status-indicator.disconnected {
+    color: #f56565;
+    animation: none;
+}
+
+.status-text {
+    font-size: 12px;
+    color: #a0aec0;
+    font-weight: 500;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 /* Form Container */
 .auth-form-container {
     background: rgba(255, 255, 255, 0.95);
@@ -189,10 +231,24 @@ body {
 .auth-form {
     display: none;
     animation: fadeIn 0.4s ease;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .auth-form.active {
     display: block;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Debug styles - make sure forms are visible when active */
+.auth-form.active {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    border: 2px solid #4fd1c7;
+    background: rgba(79, 209, 199, 0.05);
 }
 
 @keyframes fadeIn {
@@ -389,6 +445,57 @@ body {
     transition: opacity 0.3s ease;
 }
 
+/* Google Button */
+.btn-google {
+    background: #4285f4;
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.3);
+}
+
+.btn-google:hover {
+    background: #3367d6;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+}
+
+.btn-google:active {
+    transform: translateY(0);
+}
+
+.btn-icon {
+    font-size: 18px;
+}
+
+/* Divider */
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(160, 174, 192, 0.3);
+}
+
+.divider span {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    padding: 0 15px;
+    color: #a0aec0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
 /* Alerts */
 .alert {
     padding: 12px 16px;
@@ -429,6 +536,41 @@ body {
     color: #a0aec0;
     font-size: 14px;
     animation: fadeIn 1s ease 0.6s both;
+}
+
+.setup-instructions {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.setup-instructions h4 {
+    color: #4fd1c7;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.setup-instructions ol {
+    text-align: left;
+    margin: 0 auto;
+    max-width: 300px;
+}
+
+.setup-instructions li {
+    margin-bottom: 8px;
+    color: #e2e8f0;
+}
+
+.setup-instructions code {
+    background: rgba(79, 209, 199, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #4fd1c7;
 }
 
 /* Success Modal */

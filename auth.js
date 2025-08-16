@@ -1,11 +1,11 @@
 /**
  * Authentication System for Split Bill Calculator
- * Handles user registration, login, and data persistence using JSON files
+ * Frontend: vanilla JS
+ * Backend: Node.js + Express storing users in users.json and session in session.json
  */
 
-// Global variables
+// Global state
 let currentForm = 'signin';
-let users = [];
 let currentUser = null;
 
 // DOM elements
@@ -20,23 +20,30 @@ const successModal = document.getElementById('successModal');
 /**
  * Initialize the authentication system
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('Initializing authentication system...');
     
-    // Load existing users from JSON file
-    loadUsers();
+    // Debug: Check initial form states
+    console.log('Initial SignIn form classes:', signInForm.className);
+    console.log('Initial SignUp form classes:', signUpForm.className);
+    console.log('Initial SignIn toggle classes:', signInToggle.className);
+    console.log('Initial SignUp toggle classes:', signUpToggle.className);
     
-    // Set up event listeners
     setupEventListeners();
+    await checkExistingSession();
     
-    // Check if user is already logged in
-    checkExistingSession();
+    // Check server connection status
+    await checkServerConnection();
     
-    // Hide loading screen and show auth container
-    setTimeout(() => {
-        loading.style.display = 'none';
-        authContainer.style.display = 'flex';
-    }, 1500);
+    // Debug: Check form states after setup
+    console.log('After setup - SignIn form classes:', signInForm.className);
+    console.log('After setup - SignUp form classes:', signUpForm.className);
+    
+    loading.style.display = 'none';
+    authContainer.style.display = 'flex';
+    
+    // Ensure Sign In form is active by default
+    switchForm('signin');
 });
 
 /**
@@ -47,8 +54,19 @@ function setupEventListeners() {
     signInForm.addEventListener('submit', handleSignIn);
     signUpForm.addEventListener('submit', handleSignUp);
     
+    // Toggle button click events
+    signInToggle.addEventListener('click', () => {
+        console.log('Sign In toggle clicked');
+        switchForm('signin');
+    });
+    
+    signUpToggle.addEventListener('click', () => {
+        console.log('Sign Up toggle clicked');
+        switchForm('signup');
+    });
+    
     // Input validation on blur
-    document.getElementById('signUpUsername').addEventListener('blur', validateUsername);
+    document.getElementById('signUpName').addEventListener('blur', validateName);
     document.getElementById('signUpEmail').addEventListener('blur', validateEmail);
     document.getElementById('signUpPassword').addEventListener('input', validatePassword);
     document.getElementById('signUpConfirmPassword').addEventListener('input', validateConfirmPassword);
@@ -79,6 +97,8 @@ function setupEventListeners() {
  */
 function switchForm(formType) {
     console.log(`Switching to ${formType} form`);
+    console.log('Before switch - SignIn form classes:', signInForm.className);
+    console.log('Before switch - SignUp form classes:', signUpForm.className);
     
     // Update toggle buttons
     if (formType === 'signin') {
@@ -87,13 +107,19 @@ function switchForm(formType) {
         signInForm.classList.add('active');
         signUpForm.classList.remove('active');
         currentForm = 'signin';
+        console.log('Switched to Sign In form');
     } else {
         signUpToggle.classList.add('active');
         signInToggle.classList.remove('active');
         signUpForm.classList.add('active');
         signInForm.classList.remove('active');
         currentForm = 'signup';
+        console.log('Switched to Sign Up form');
     }
+    
+    console.log('After switch - SignIn form classes:', signInForm.className);
+    console.log('After switch - SignUp form classes:', signUpForm.className);
+    console.log('Current form:', currentForm);
     
     // Clear any existing alerts
     clearAlerts();
@@ -111,13 +137,17 @@ async function handleSignIn(e) {
     console.log('Processing sign in...');
     
     // Get form data
-    const username = document.getElementById('signInUsername').value.trim();
+    const email = document.getElementById('signInEmail').value.trim();
     const password = document.getElementById('signInPassword').value;
     const rememberMe = document.getElementById('rememberMe').checked;
     
     // Validate inputs
-    if (!username || !password) {
+    if (!email || !password) {
         showAlert('signInAlert', 'Please fill in all fields', 'error');
+        return;
+    }
+    if (!isValidEmail(email)) {
+        showAlert('signInAlert', 'Please enter a valid email', 'error');
         return;
     }
     
@@ -125,44 +155,37 @@ async function handleSignIn(e) {
     setButtonLoading('signInBtn', true);
     
     try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Find user in the loaded users array
-        const user = users.find(u => 
-            u.username.toLowerCase() === username.toLowerCase() && 
-            u.password === password
-        );
-        
-        if (user) {
-            // Successful login
-            currentUser = user;
+        // Use absolute URL to localhost server when accessing auth.html directly
+        const apiBase = window.location.hostname === 'localhost' && window.location.port === '3000' 
+            ? '' 
+            : 'http://localhost:3000';
             
-            // Save session if remember me is checked
-            if (rememberMe) {
-                localStorage.setItem('splitBillUser', JSON.stringify(user));
-            } else {
-                sessionStorage.setItem('splitBillUser', JSON.stringify(user));
-            }
-            
-            // Show success message
-            showAlert('signInAlert', `Welcome back, ${user.username}!`, 'success');
-            
-            // Redirect to main application after a short delay
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
-            
-        } else {
-            // Invalid credentials
-            showAlert('signInAlert', 'Invalid username or password', 'error');
-            document.getElementById('signInPassword').value = '';
-            document.getElementById('signInPassword').focus();
+        const response = await fetch(`${apiBase}/api/auth/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, remember: !!rememberMe })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data?.error || 'Failed to sign in');
         }
-        
+
+        currentUser = data.user;
+
+        // Optional client-side session mirror
+        try {
+            const storage = rememberMe ? localStorage : sessionStorage;
+            storage.setItem('splitBillUser', JSON.stringify(currentUser));
+        } catch (_) {}
+
+        showAlert('signInAlert', `Welcome back, ${currentUser.name || currentUser.email}!`, 'success');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 800);
     } catch (error) {
         console.error('Sign in error:', error);
-        showAlert('signInAlert', 'An error occurred. Please try again.', 'error');
+        showAlert('signInAlert', error.message || 'An error occurred. Please try again.', 'error');
     } finally {
         setButtonLoading('signInBtn', false);
     }
@@ -177,14 +200,14 @@ async function handleSignUp(e) {
     console.log('Processing sign up...');
     
     // Get form data
-    const username = document.getElementById('signUpUsername').value.trim();
+    const name = document.getElementById('signUpName').value.trim();
     const email = document.getElementById('signUpEmail').value.trim();
     const password = document.getElementById('signUpPassword').value;
     const confirmPassword = document.getElementById('signUpConfirmPassword').value;
     const agreeTerms = document.getElementById('agreeTerms').checked;
     
     // Validate all inputs
-    if (!validateAllSignUpFields(username, email, password, confirmPassword, agreeTerms)) {
+    if (!validateAllSignUpFields(name, email, password, confirmPassword, agreeTerms)) {
         return;
     }
     
@@ -192,53 +215,47 @@ async function handleSignUp(e) {
     setButtonLoading('signUpBtn', true);
     
     try {
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const requestBody = { name, email, password };
+        console.log('Sending signup request:', { ...requestBody, password: '[HIDDEN]' });
         
-        // Check if username already exists
-        if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-            showAlert('signUpAlert', 'Username already exists. Please choose another one.', 'error');
-            document.getElementById('signUpUsername').focus();
-            return;
+        // Use absolute URL to localhost server when accessing auth.html directly
+        const apiBase = window.location.hostname === 'localhost' && window.location.port === '3000' 
+            ? '' 
+            : 'http://localhost:3000';
+            
+        const response = await fetch(`${apiBase}/api/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
+        let data;
+        try {
+            data = JSON.parse(responseText);
+            console.log('Parsed response data:', data);
+        } catch (parseError) {
+            console.error('Failed to parse JSON response:', parseError);
+            console.error('Raw response text:', responseText);
+            throw new Error('Invalid response from server');
         }
-        
-        // Check if email already exists
-        if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-            showAlert('signUpAlert', 'Email already registered. Please use a different email.', 'error');
-            document.getElementById('signUpEmail').focus();
-            return;
+
+        if (!response.ok) {
+            throw new Error(data?.error || 'Failed to create account');
         }
-        
-        // Create new user object
-        const newUser = {
-            id: Date.now().toString(),
-            username: username,
-            email: email,
-            password: password, // In a real app, this should be hashed
-            createdAt: new Date().toISOString(),
-            lastLogin: null
-        };
-        
-        // Add user to users array
-        users.push(newUser);
-        
-        // Save updated users to JSON file
-        await saveUsers();
-        
-        // Show success modal
-        showSuccessModal('Account Created!', `Welcome to Split Bill Calculator, ${username}! Your account has been created successfully.`);
-        
-        // Clear form
+
+        showSuccessModal('Account Created!', `Welcome to Split Bill Calculator, ${name}! Your account has been created successfully.`);
         signUpForm.reset();
-        
-        // Switch to sign in form after modal is closed
-        setTimeout(() => {
-            switchForm('signin');
-        }, 2000);
+        setTimeout(() => { switchForm('signin'); }, 1200);
         
     } catch (error) {
         console.error('Sign up error:', error);
-        showAlert('signUpAlert', 'An error occurred while creating your account. Please try again.', 'error');
+        showAlert('signUpAlert', error.message || 'An error occurred while creating your account. Please try again.', 'error');
     } finally {
         setButtonLoading('signUpBtn', false);
     }
@@ -246,28 +263,24 @@ async function handleSignUp(e) {
 
 /**
  * Validate all Sign Up form fields
- * @param {string} username - Username input
+ * @param {string} name - Full name input
  * @param {string} email - Email input
  * @param {string} password - Password input
  * @param {string} confirmPassword - Confirm password input
  * @param {boolean} agreeTerms - Terms agreement checkbox
  * @returns {boolean} - True if all validations pass
  */
-function validateAllSignUpFields(username, email, password, confirmPassword, agreeTerms) {
+function validateAllSignUpFields(name, email, password, confirmPassword, agreeTerms) {
     let isValid = true;
     
-    // Username validation
-    if (!username) {
-        showAlert('signUpAlert', 'Username is required', 'error');
-        document.getElementById('signUpUsername').focus();
+    // Name validation
+    if (!name) {
+        showAlert('signUpAlert', 'Full name is required', 'error');
+        document.getElementById('signUpName').focus();
         isValid = false;
-    } else if (username.length < 3 || username.length > 30) {
-        showAlert('signUpAlert', 'Username must be between 3 and 30 characters', 'error');
-        document.getElementById('signUpUsername').focus();
-        isValid = false;
-    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        showAlert('signUpAlert', 'Username can only contain letters, numbers, and underscores', 'error');
-        document.getElementById('signUpUsername').focus();
+    } else if (name.length < 2 || name.length > 60) {
+        showAlert('signUpAlert', 'Full name must be between 2 and 60 characters', 'error');
+        document.getElementById('signUpName').focus();
         isValid = false;
     }
     
@@ -287,8 +300,8 @@ function validateAllSignUpFields(username, email, password, confirmPassword, agr
         showAlert('signUpAlert', 'Password is required', 'error');
         if (isValid) document.getElementById('signUpPassword').focus();
         isValid = false;
-    } else if (password.length < 8) {
-        showAlert('signUpAlert', 'Password must be at least 8 characters long', 'error');
+    } else if (password.length < 6) {
+        showAlert('signUpAlert', 'Password must be at least 6 characters long', 'error');
         if (isValid) document.getElementById('signUpPassword').focus();
         isValid = false;
     }
@@ -314,33 +327,20 @@ function validateAllSignUpFields(username, email, password, confirmPassword, agr
 }
 
 /**
- * Validate username input
+ * Validate full name input
  */
-function validateUsername() {
-    const username = document.getElementById('signUpUsername').value.trim();
-    const usernameInput = document.getElementById('signUpUsername');
-    
-    if (!username) {
-        setInputError(usernameInput, 'Username is required');
+function validateName() {
+    const name = document.getElementById('signUpName').value.trim();
+    const nameInput = document.getElementById('signUpName');
+    if (!name) {
+        setInputError(nameInput, 'Full name is required');
         return false;
     }
-    
-    if (username.length < 3 || username.length > 30) {
-        setInputError(usernameInput, 'Username must be between 3 and 30 characters');
+    if (name.length < 2 || name.length > 60) {
+        setInputError(nameInput, 'Full name must be between 2 and 60 characters');
         return false;
     }
-    
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        setInputError(usernameInput, 'Username can only contain letters, numbers, and underscores');
-        return false;
-    }
-    
-    if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-        setInputError(usernameInput, 'Username already exists');
-        return false;
-    }
-    
-    setInputSuccess(usernameInput);
+    setInputSuccess(nameInput);
     return true;
 }
 
@@ -358,11 +358,6 @@ function validateEmail() {
     
     if (!isValidEmail(email)) {
         setInputError(emailInput, 'Please enter a valid email address');
-        return false;
-    }
-    
-    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-        setInputError(emailInput, 'Email already registered');
         return false;
     }
     
@@ -480,83 +475,75 @@ function resetFormValidation() {
 }
 
 /**
- * Load users from JSON file
+ * Check server connection status
  */
-async function loadUsers() {
+async function checkServerConnection() {
+    const statusIndicator = document.getElementById('statusIndicator');
+    const statusText = document.getElementById('statusText');
+    
     try {
-        // In a real application, this would be an API call
-        // For now, we'll use localStorage as a fallback
-        const storedUsers = localStorage.getItem('splitBillUsers');
-        if (storedUsers) {
-            users = JSON.parse(storedUsers);
-            console.log(`Loaded ${users.length} users from storage`);
+        // Determine API base URL
+        const apiBase = window.location.hostname === 'localhost' && window.location.port === '3000' 
+            ? '' 
+            : 'http://localhost:3000';
+        
+        // Try to ping the server
+        const response = await fetch(`${apiBase}/api/auth/session`, { 
+            method: 'GET',
+            timeout: 3000 // 3 second timeout
+        });
+        
+        if (response.ok) {
+            statusIndicator.className = 'status-indicator connected';
+            statusText.textContent = 'Server connected';
+            console.log('✅ Server connection successful');
+            
+            // Hide setup instructions when connected
+            document.getElementById('setupInstructions').style.display = 'none';
         } else {
-            // Create default users for testing
-            users = [
-                {
-                    id: '1',
-                    username: 'demo',
-                    email: 'demo@example.com',
-                    password: 'demo123',
-                    createdAt: '2024-01-01T00:00:00.000Z',
-                    lastLogin: null
-                }
-            ];
-            await saveUsers();
-            console.log('Created default demo user');
+            throw new Error('Server responded with error');
         }
     } catch (error) {
-        console.error('Error loading users:', error);
-        users = [];
-    }
-}
-
-/**
- * Save users to JSON file
- */
-async function saveUsers() {
-    try {
-        // In a real application, this would be an API call
-        // For now, we'll use localStorage as a fallback
-        localStorage.setItem('splitBillUsers', JSON.stringify(users));
-        console.log(`Saved ${users.length} users to storage`);
-        return true;
-    } catch (error) {
-        console.error('Error saving users:', error);
-        return false;
+        statusIndicator.className = 'status-indicator disconnected';
+        statusText.textContent = 'Server disconnected - Start local server first';
+        console.error('❌ Server connection failed:', error);
+        
+        // Show warning to user
+        showAlert('signInAlert', '⚠️ Please start the local server first: node server.js', 'error');
+        showAlert('signUpAlert', '⚠️ Please start the local server first: node server.js', 'error');
+        
+        // Show setup instructions
+        document.getElementById('setupInstructions').style.display = 'block';
     }
 }
 
 /**
  * Check if user is already logged in
  */
-function checkExistingSession() {
-    // Check localStorage first (remember me)
-    const storedUser = localStorage.getItem('splitBillUser');
+async function checkExistingSession() {
+    // Prefer backend session
+    try {
+        // Use absolute URL to localhost server when accessing auth.html directly
+        const apiBase = window.location.hostname === 'localhost' && window.location.port === '3000' 
+            ? '' 
+            : 'http://localhost:3000';
+            
+        const res = await fetch(`${apiBase}/api/auth/session`);
+        if (res.ok) {
+            const session = await res.json();
+            if (session && session.userId) {
+                redirectToMainApp();
+                return;
+            }
+        }
+    } catch (_) {}
+    // Fallback to client storage
+    const storedUser = localStorage.getItem('splitBillUser') || sessionStorage.getItem('splitBillUser');
     if (storedUser) {
         try {
             currentUser = JSON.parse(storedUser);
-            console.log('User found in localStorage:', currentUser.username);
             redirectToMainApp();
-            return;
-        } catch (error) {
-            console.error('Error parsing stored user:', error);
-            localStorage.removeItem('splitBillUser');
-        }
-    }
-    
-    // Check sessionStorage (temporary session)
-    const sessionUser = sessionStorage.getItem('splitBillUser');
-    if (sessionUser) {
-        try {
-            currentUser = JSON.parse(sessionUser);
-            console.log('User found in sessionStorage:', currentUser.username);
-            redirectToMainApp();
-            return;
-        } catch (error) {
-            console.error('Error parsing session user:', error);
-            sessionStorage.removeItem('splitBillUser');
-        }
+        } catch (_) {}
     }
 }
 
@@ -640,15 +627,18 @@ function closeSuccessModal() {
  * Logout current user
  */
 function logout() {
-    console.log('Logging out user:', currentUser?.username);
-    
-    // Clear user data
+    console.log('Logging out user');
     currentUser = null;
     localStorage.removeItem('splitBillUser');
     sessionStorage.removeItem('splitBillUser');
-    
-    // Redirect to auth page
-    window.location.href = 'auth.html';
+            // Use absolute URL to localhost server when accessing auth.html directly
+        const apiBase = window.location.hostname === 'localhost' && window.location.port === '3000' 
+            ? '' 
+            : 'http://localhost:3000';
+            
+        fetch(`${apiBase}/api/auth/signout`, { method: 'POST' }).finally(() => {
+        window.location.href = 'auth.html';
+    });
 }
 
 // Export functions for use in other files

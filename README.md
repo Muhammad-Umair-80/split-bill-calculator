@@ -1,262 +1,164 @@
-# Split Bill Calculator - Authentication System
+# Split Bill Calculator with Google OAuth2
 
-A complete authentication system for the Split Bill Calculator project, featuring user registration, login, and secure data persistence.
+A Node.js application that combines a split bill calculator with Google OAuth2 authentication.
 
-## 🚀 Features
+## Features
 
-### Authentication Features
-- **User Registration**: Create new accounts with username, email, and password
-- **User Login**: Secure authentication with session management
-- **Form Validation**: Real-time input validation with helpful error messages
-- **Session Management**: Remember me functionality and secure session storage
-- **Responsive Design**: Mobile-friendly interface that works on all devices
+- **Google OAuth2 Sign-in**: Secure authentication using Google accounts
+- **Split Bill Calculator**: Calculate bill splits, tips, and random payer assignment
+- **User Management**: Automatic user creation and profile management
+- **Session Management**: Persistent login sessions using express-session
+- **Modern UI**: Clean, responsive interface for both authentication and calculator
 
-### Technical Features
-- **Vanilla JavaScript**: No frameworks required, pure ES6+ JavaScript
-- **Node.js Backend**: Simple Express server for data persistence
-- **JSON File Storage**: User data stored in local JSON files
-- **CORS Support**: Cross-origin resource sharing enabled
-- **Error Handling**: Comprehensive error handling and user feedback
+## Prerequisites
 
-## 📁 Project Structure
+- Node.js (version 14 or higher)
+- Google Cloud Console project with OAuth2 credentials
+- Google OAuth2 client credentials file
 
-```
-split-bill-calculator/
-├── auth.html          # Authentication page (Sign In/Sign Up)
-├── auth.css           # Authentication page styles
-├── auth.js            # Authentication page JavaScript
-├── server.js          # Node.js Express server
-├── package.json       # Node.js dependencies
-├── users.json         # User data storage (auto-created)
-├── index.html         # Main application (existing)
-├── index.css          # Main application styles (existing)
-└── README.md          # This file
-```
+## Setup Instructions
 
-## 🛠️ Installation & Setup
+### 1. Install Dependencies
 
-### Prerequisites
-- Node.js (version 14.0.0 or higher)
-- npm (comes with Node.js)
-
-### Step 1: Install Dependencies
 ```bash
 npm install
 ```
 
-### Step 2: Start the Server
-```bash
-# Development mode (with auto-restart)
-npm run dev
+### 2. Google OAuth2 Configuration
 
-# Production mode
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API
+4. Go to "Credentials" → "Create Credentials" → "OAuth 2.0 Client IDs"
+5. Set up OAuth consent screen
+6. Choose "Web application" as the application type
+7. Add authorized JavaScript origins: `http://localhost:3000`
+8. Add authorized redirect URIs: `http://localhost:3000/auth/google/callback`
+9. Download the credentials JSON file
+10. Rename it to `client_secret_1009038599977-7k9rklbaiu5t6ofsk9vr32lrp4nqa6tj.apps.googleusercontent.com.json` and place it in the project root
+
+### 3. Start the Server
+
+```bash
 npm start
+```
+
+Or for development with auto-restart:
+
+```bash
+npm run dev
 ```
 
 The server will start on `http://localhost:3000`
 
-### Step 3: Access the Application
-- **Authentication Page**: `http://localhost:3000/auth.html`
-- **Main Application**: `http://localhost:3000/index.html`
+## Usage
 
-## 🔐 Default Login Credentials
+### Authentication Flow
 
-For testing purposes, a demo account is automatically created:
-
-- **Username**: `demo`
-- **Password**: `demo123`
-- **Email**: `demo@example.com`
-
-## 📱 Usage
-
-### Sign Up Process
-1. Navigate to the authentication page
-2. Click "Sign Up" tab
-3. Fill in the required fields:
-   - Username (3-30 characters, letters/numbers/underscores only)
-   - Email address (must be unique)
-   - Password (minimum 8 characters)
-   - Confirm password
-   - Agree to terms and conditions
-4. Click "Create Account"
-5. Account will be created and stored in `users.json`
-
-### Sign In Process
-1. Navigate to the authentication page
-2. Click "Sign In" tab
-3. Enter your username and password
-4. Optionally check "Remember me" for persistent login
-5. Click "Sign In"
-6. Upon successful authentication, you'll be redirected to the main application
-
-### Session Management
-- **Remember Me**: Stores login in localStorage (persistent)
-- **Regular Login**: Stores login in sessionStorage (temporary)
-- **Auto-redirect**: Automatically redirects to main app if already logged in
-
-## 🎨 Customization
-
-### Styling
-The authentication system uses the same design theme as your main application:
-- Dark gradient background
-- Teal accent colors (#4fd1c7)
-- Glassmorphism effects
-- Responsive design
-
-### Colors
-```css
-/* Primary Colors */
---primary: #4fd1c7;
---primary-dark: #38b2ac;
---background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-
-/* Text Colors */
---text-primary: #e2e8f0;
---text-secondary: #a0aec0;
---text-dark: #2c3e50;
-```
-
-### Validation Rules
-```javascript
-// Username: 3-30 characters, alphanumeric + underscore
-/^[a-zA-Z0-9_]+$/
-
-// Email: Standard email format
-/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-// Password: Minimum 8 characters
-password.length >= 8
-```
-
-## 🔧 API Endpoints
-
-The Node.js server provides the following REST API endpoints:
-
-### Authentication
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/signin` - User login
-- `GET /api/auth/verify` - Verify user session
+1. **Home Page** (`/`): Displays "Sign in with Google" button
+2. **Google OAuth** (`/auth/google`): Redirects to Google's authentication page
+3. **Callback** (`/auth/google/callback`): Handles Google's response and creates/updates user
+4. **Dashboard** (`/dashboard`): Protected page showing user profile and information
+5. **Logout** (`/logout`): Ends session and returns to home page
 
 ### User Management
-- `GET /api/users` - Get all users (admin only)
 
-### Request/Response Examples
+- Users are automatically created on first Google sign-in
+- User information is stored in `users.json`
+- Duplicate users are prevented by email address
+- Profile pictures, names, and login timestamps are tracked
 
-#### Sign Up
-```javascript
-POST /api/auth/signup
-{
-  "username": "john_doe",
-  "email": "john@example.com",
-  "password": "securepass123"
-}
+### Calculator Features
 
-// Response
-{
-  "message": "User created successfully",
-  "user": {
-    "id": "1703123456789",
-    "username": "john_doe",
-    "email": "john@example.com",
-    "createdAt": "2024-01-01T12:00:00.000Z"
-  }
-}
+- **Basic Calculator**: Standard arithmetic operations
+- **Simple Calculator**: Bill splitting with tip calculation
+- **Split Share**: Advanced bill splitting with individual amounts
+
+## API Endpoints
+
+- `GET /` - Home page with sign-in
+- `GET /auth/google` - Start Google OAuth process
+- `GET /auth/google/callback` - Handle OAuth callback
+- `GET /dashboard` - Protected user dashboard
+- `GET /logout` - End user session
+- `GET /api/users` - Get all users (admin)
+- `GET /api/auth/session` - Get current session info
+
+## File Structure
+
+```
+split-bill-calculator/
+├── server.js                                    # Main server with OAuth integration
+├── package.json                                 # Dependencies and scripts
+├── users.json                                   # User data storage
+├── client_secret_*.json                        # Google OAuth credentials
+├── index.html                                   # Main calculator interface
+├── index.css                                    # Calculator styles
+├── auth.html                                    # Authentication page
+├── auth.css                                     # Authentication styles
+└── README.md                                    # This file
 ```
 
-#### Sign In
-```javascript
-POST /api/auth/signin
-{
-  "username": "john_doe",
-  "password": "securepass123"
-}
+## Security Features
 
-// Response
-{
-  "message": "Login successful",
-  "user": {
-    "id": "1703123456789",
-    "username": "john_doe",
-    "email": "john@example.com",
-    "lastLogin": "2024-01-01T12:00:00.000Z"
-  }
-}
-```
+- Session-based authentication
+- Secure cookie handling
+- OAuth2 token verification
+- User data validation
+- CSRF protection through session tokens
 
-## 🚨 Security Considerations
+## Development
 
-### Current Implementation
-- Passwords are stored in plain text (for demo purposes)
-- No rate limiting on authentication attempts
-- Basic input validation
+### Environment Variables
 
-### Production Recommendations
-- **Password Hashing**: Use bcrypt or similar for password storage
-- **JWT Tokens**: Implement JWT for secure session management
-- **Rate Limiting**: Add rate limiting to prevent brute force attacks
-- **HTTPS**: Use HTTPS in production
-- **Input Sanitization**: Implement more robust input validation
-- **Environment Variables**: Store sensitive configuration in environment variables
+You can customize the following by setting environment variables:
 
-## 🐛 Troubleshooting
+- `PORT`: Server port (default: 3000)
+- Session secret (change in production)
+
+### Adding New Features
+
+1. Add new routes in `server.js`
+2. Create corresponding HTML/CSS files
+3. Update the navigation if needed
+4. Test authentication flow
+
+## Troubleshooting
 
 ### Common Issues
 
-#### Server Won't Start
-- Check if port 3000 is already in use
-- Ensure Node.js version is 14.0.0 or higher
-- Verify all dependencies are installed
-
-#### Authentication Fails
-- Check browser console for JavaScript errors
-- Verify server is running on correct port
-- Check network tab for failed API requests
-
-#### Users Not Saving
-- Ensure `users.json` file is writable
-- Check server console for file system errors
-- Verify proper file permissions
+1. **"Invalid redirect URI"**: Check Google Cloud Console redirect URI settings
+2. **"Client ID not found"**: Verify credentials file is in the correct location
+3. **Session not persisting**: Check cookie settings and session configuration
+4. **Port already in use**: Change PORT environment variable or kill existing process
 
 ### Debug Mode
-Enable debug logging by setting the environment variable:
+
+Enable debug logging by setting:
+
 ```bash
-DEBUG=* npm start
+DEBUG=passport:* npm start
 ```
 
-## 📝 Development
+## Production Deployment
 
-### Adding New Features
-1. Modify `auth.js` for frontend logic
-2. Update `server.js` for backend API changes
-3. Adjust `auth.css` for styling changes
-4. Test thoroughly on different devices
+Before deploying to production:
 
-### File Structure Best Practices
-- Keep authentication logic separate from main application
-- Use consistent naming conventions
-- Implement proper error handling
-- Add comprehensive logging
+1. Change session secret to a secure random string
+2. Set `secure: true` for cookies (HTTPS required)
+3. Use environment variables for sensitive configuration
+4. Set up proper HTTPS certificates
+5. Update Google OAuth redirect URIs to production domain
+6. Implement proper error handling and logging
 
-## 🤝 Contributing
+## License
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+MIT License - see LICENSE file for details
 
-## 📄 License
+## Support
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-If you encounter any issues or have questions:
-1. Check the troubleshooting section above
-2. Review the browser console for errors
-3. Check the server console for backend errors
-4. Create an issue in the repository
-
----
-
-**Note**: This authentication system is designed for development and demonstration purposes. For production use, implement proper security measures as outlined in the security considerations section.
+For issues or questions:
+1. Check the troubleshooting section
+2. Verify Google OAuth configuration
+3. Check server logs for error messages
+4. Ensure all dependencies are properly installed
