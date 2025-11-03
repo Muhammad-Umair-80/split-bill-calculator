@@ -1,18 +1,4 @@
 [
-  {
-    "id": "1755385202200",
-    "name": "Test User",
-    "email": "test@example.com",
-    "password": "$2b$10$skKby3bQXCgXTaflrtKmP.mBW9fEBlYnMZVqF.qMp6C5WR1eNiOxC",
-    "createdAt": "2025-08-16T23:00:02.201Z",
-    "lastLogin": null
-  },
-  {
-    "id": "1755386950817",
-    "name": "Muhammad",
-    "email": "muhammadumairkhan417@gmail.com",
-    "password": "$2b$10$VjKfTJWP1yqj9z/C55M3r.biMxcg3jGFrTqzN3WPErk5rndqEproC",
-    "createdAt": "2025-08-16T23:29:10.818Z",
-    "lastLogin": "2025-08-17T22:42:28.532Z"
-  }
+  
+
 ]
